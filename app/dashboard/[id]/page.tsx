@@ -143,31 +143,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </Button>
               </div>
             </div>
-
-            <div className="rounded-3xl border border-white/5 bg-[#0a0809] p-10 space-y-8 shadow-2xl">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/30 font-mono">
-                  Processing Efficiency
-                </h3>
-                <div className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#69E300] animate-pulse" />
-                  <span className="text-[#69E300] text-[10px] font-bold font-mono">OPTIMIZED</span>
-                </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black font-display tracking-tighter">99.4</span>
-                <span className="text-white/20 text-xs font-bold tracking-widest font-mono">QoS</span>
-              </div>
-              <div className="space-y-3">
-                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                  <div className="h-full w-[94%] bg-gradient-to-r from-[#69E300]/50 to-[#69E300] shadow-[0_0_10px_rgba(105,227,0,0.5)]" />
-                </div>
-                <div className="flex justify-between text-[10px] text-white/30 font-bold tracking-widest uppercase">
-                  <span>Latency: 12ms</span>
-                  <span>Throughput: 1.4GB/s</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </main>

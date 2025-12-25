@@ -39,17 +39,6 @@ export function HeroSection() {
                 View Agent Docs
               </Button>
             </div>
-
-            <div className="flex items-center gap-8 pt-4">
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-[#69E300]" />
-                <span className="text-sm font-medium text-white/40">Zero-Trust Sandbox</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Search className="h-5 w-5 text-[#69E300]" />
-                <span className="text-sm font-medium text-white/40">Full Audit Trace</span>
-              </div>
-            </div>
           </div>
 
           <div className="relative">

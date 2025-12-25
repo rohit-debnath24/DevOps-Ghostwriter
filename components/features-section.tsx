@@ -49,6 +49,9 @@ export function FeaturesSection() {
   return (
     <div className="space-y-12">
       <div className="text-center space-y-4 max-w-2xl mx-auto">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#69E300]/20 bg-[#69E300]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#69E300]">
+          Core Features
+        </div>
         <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Scale your DevOps with AI</h2>
         <p className="text-white/40 text-lg">
           The most advanced agentic platform designed specifically for high-growth engineering teams.

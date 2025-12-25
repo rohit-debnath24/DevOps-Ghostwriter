@@ -28,12 +28,14 @@ const steps = [
 export function HowItWorks() {
   return (
     <section className="space-y-12">
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-[#69E300]">
-          <Terminal className="h-5 w-5" />
-          <span className="text-sm font-bold uppercase tracking-widest">Workflow</span>
+      <div className="text-center space-y-4 max-w-2xl mx-auto">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#69E300]/20 bg-[#69E300]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#69E300]">
+          Workflow
         </div>
-        <h2 className="text-3xl font-bold text-white">How it Works</h2>
+        <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">How it Works</h2>
+        <p className="text-white/40 text-lg">
+          A streamlined workflow that connects your repositories to autonomous agents, ensuring secure and verified code operations.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
