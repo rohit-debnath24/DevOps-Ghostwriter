@@ -286,7 +286,7 @@ export function SignUpForm() {
               className="h-12 gap-3 bg-white/[0.02] border-white/5 text-white/60 hover:text-white hover:border-white/20 rounded-xl font-mono text-xs transition-all"
               onClick={handleGoogleSignUp}
             >
-              <Chrome className="w-4 h-4" />
+              <Image src="/google-logo.png" alt="Google" width={16} height={16} />
               Google
             </Button>
             <Button

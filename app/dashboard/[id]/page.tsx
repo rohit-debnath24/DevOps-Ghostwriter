@@ -29,12 +29,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
 
         {/* Hero Overlay Content */}
         <div className="absolute inset-0 z-20">
-          <div className="container mx-auto px-6 h-full flex flex-col justify-center pt-20">
-            <div className="flex items-center gap-2 text-[#69E300] mb-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-              <div className="h-px w-8 bg-[#69E300]" />
-              <Terminal className="h-4 w-4" />
-              <span className="text-xs font-bold uppercase tracking-[0.3em] font-mono">Neural Perimeter Active</span>
-            </div>
+          <div className="container mx-auto px-6 h-full flex flex-col justify-center pt-6">
             <h1 className="text-7xl font-black tracking-tighter mb-6 max-w-3xl font-display leading-[0.9] animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-100">
               Agentic <span className="text-[#69E300]">Observability</span>
             </h1>
