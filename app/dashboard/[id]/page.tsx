@@ -1,7 +1,7 @@
 import { RepositoryGrid } from "@/components/repository-grid"
 import { GlobalStats } from "@/components/global-stats"
 import { ActivityFeed } from "@/components/activity-feed"
-import { Shield, Activity, Terminal, ChevronRight, Search, Bell, Settings } from "lucide-react"
+import { Shield, Activity, Terminal, ChevronRight, Search, Bell, Settings, Github, Send } from "lucide-react"
 import LaserFlow from "@/components/laser-flow"
 import { Button } from "@/components/ui/button"
 
@@ -43,42 +43,49 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
 
       <main className="max-w-[75%] mx-auto px-6 -mt-32 relative z-30 space-y-12 mb-32">
         {/* Glass Dashboard Navigation Bar */}
-        <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl px-8 py-5 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          <div className="flex items-center gap-4 text-sm">
-            <span className="text-white/40 font-medium">System</span>
-            <ChevronRight className="h-4 w-4 text-white/20" />
-            <span className="text-[#69E300] font-mono font-bold">{id}</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative hidden xl:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20" />
-              <input
-                placeholder="Search heuristic logs..."
-                className="bg-black/40 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:border-[#69E300]/50 transition-all w-72 placeholder:text-white/20"
+        <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl px-8 py-4 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="relative flex-1 max-w-3xl">
+              <textarea
+                placeholder="Paste GitHub PR URL here..."
+                className="bg-black/40 border border-white/5 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#69E300]/50 transition-all w-full placeholder:text-white/20 resize-none h-12 leading-relaxed"
+                rows={1}
               />
             </div>
-            <div className="h-8 w-px bg-white/10 mx-2" />
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10 text-white/40 hover:text-[#69E300] transition-colors"
+              className="h-12 w-12 text-white/40 hover:text-[#69E300] transition-colors"
+              title="Connect GitHub"
+            >
+              <Github className="h-5 w-5" />
+            </Button>
+            <div className="h-10 w-px bg-white/10" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-12 w-12 text-white/40 hover:text-[#69E300] transition-colors"
+              title="Notifications"
             >
               <Bell className="h-5 w-5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10 text-white/40 hover:text-[#69E300] transition-colors"
+              className="h-12 w-12 text-white/40 hover:text-[#69E300] transition-colors"
+              title="Settings"
             >
               <Settings className="h-5 w-5" />
             </Button>
-            <Button className="bg-[#69E300] text-black font-bold text-xs px-6 rounded-lg hover:bg-[#5bc500] transition-all ml-2">
-              New Agent
+            <Button
+              className="bg-[#69E300] text-black font-bold text-sm px-6 h-12 rounded-lg hover:bg-[#5bc500] transition-all ml-2 flex items-center gap-2"
+              title="Submit PR for Analysis"
+            >
+              <Send className="h-4 w-4" />
+              Submit
             </Button>
           </div>
-        </div>
-
-        {/* Global Performance Section */}
+        </div>        {/* Global Performance Section */}
         <div className="space-y-6">
           <div className="flex items-center gap-2 text-[#69E300]">
             <Activity className="h-4 w-4" />
