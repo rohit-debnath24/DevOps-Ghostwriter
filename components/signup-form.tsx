@@ -124,8 +124,8 @@ export function SignUpForm() {
           <div className="relative w-full h-full overflow-hidden bg-white/[0.02] backdrop-blur-sm group">
             <div className="absolute inset-0 bg-gradient-to-br from-[#69E300]/10 to-transparent z-10 opacity-50" />
             <Image
-              src="/placeholder.svg?key=nn1c9"
-              alt="Operator Registration Visual"
+              src="/signup-page-banner.jpeg"
+              alt="Signup Page Banner"
               fill
               className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
             />
@@ -152,7 +152,7 @@ export function SignUpForm() {
               <h2 className="text-3xl font-display font-bold text-white tracking-tight">
                 Join the Ghostwriter Network.
               </h2>
-              <p className="mt-2 text-white/40 font-medium italic">Initialize new operator profile...</p>
+              <p className="mt-2 text-white/40 font-medium italic">Initialize new profile...</p>
             </div>
           </div>
 

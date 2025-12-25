@@ -86,8 +86,8 @@ export function LoginForm() {
               </span>
             </Link>
             <div>
-              <h2 className="text-3xl font-display font-bold text-white tracking-tight">Identity Verification.</h2>
-              <p className="mt-2 text-white/40 font-medium italic">Authenticate to establish secure connection...</p>
+              <h2 className="text-3xl font-display font-bold text-white tracking-tight">Welcome back!</h2>
+              <p className="mt-2 text-white/40 font-medium italic">Login to your account<br />It's nice to see you again. Ready to code?</p>
             </div>
           </div>
 
