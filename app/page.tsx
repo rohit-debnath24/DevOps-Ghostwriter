@@ -1,0 +1,29 @@
+import { HeroSection } from "@/components/hero-section"
+import { FeaturesSection } from "@/components/features-section"
+import { CTASection } from "@/components/cta-section"
+import { HowItWorks } from "@/components/how-it-works"
+import TestimonialCarousel from "@/components/testimonial-carousel"
+
+export default function Home() {
+  return (
+    <div className="min-h-screen bg-[#0a0809] text-white selection:bg-[#69E300]/30">
+      <main className="pt-16">
+        <HeroSection />
+
+        <section className="container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 py-20 space-y-32 max-w-[1400px]">
+          {/* How It Works Section */}
+          <HowItWorks />
+
+          {/* Key Features Section */}
+          <FeaturesSection />
+
+          {/* Testimonial Carousel Section */}
+          <TestimonialCarousel />
+
+          {/* CTA Section */}
+          <CTASection />
+        </section>
+      </main>
+    </div>
+  )
+}
