@@ -55,19 +55,10 @@ export function LoginForm() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0a0809] font-sans selection:bg-[#69E300]/30">
-      {/* Left Side - Image and Dot Grid */}
+      {/* Left Side - Image */}
       <div className="relative hidden lg:flex w-1/2 flex-col items-center justify-center border-r border-white/5 bg-[#0a0809]">
-        {/* Abstract Grid Background */}
-        <div
-          className="absolute inset-0 z-0 opacity-20"
-          style={{
-            backgroundImage: "radial-gradient(circle at 2px 2px, #69E300 1px, transparent 0)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-
-        <div className="relative z-10 w-full max-w-lg p-12 h-full flex items-center justify-center">
-          <div className="relative w-full aspect-square rounded-2xl overflow-hidden border border-white/10 bg-white/[0.02] backdrop-blur-sm group">
+        <div className="relative z-10 w-full h-full">
+          <div className="relative w-full h-full overflow-hidden bg-white/[0.02] backdrop-blur-sm group">
             <div className="absolute inset-0 bg-gradient-to-br from-[#69E300]/10 to-transparent z-10 opacity-50" />
             <Image
               src="/high-tech-devops-mission-control-interface.jpg"
@@ -75,9 +66,6 @@ export function LoginForm() {
               fill
               className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
             />
-            {/* Decorative corners */}
-            <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-[#69E300]/30 rounded-tl-lg" />
-            <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-[#69E300]/30 rounded-br-lg" />
           </div>
         </div>
       </div>
@@ -185,7 +173,7 @@ export function LoginForm() {
               <Button
                 variant="outline"
                 className="h-12 gap-3 bg-white/[0.02] border-white/5 text-white/60 hover:text-white hover:border-white/20 rounded-xl font-mono text-xs transition-all"
-                onClick={() => {}}
+                onClick={() => { }}
               >
                 <Chrome className="w-4 h-4" />
                 Google
@@ -193,7 +181,7 @@ export function LoginForm() {
               <Button
                 variant="outline"
                 className="h-12 gap-3 bg-white/[0.02] border-white/5 text-white/60 hover:text-white hover:border-white/20 rounded-xl font-mono text-xs transition-all"
-                onClick={() => {}}
+                onClick={() => { }}
               >
                 <Github className="w-4 h-4" />
                 GitHub
