@@ -142,8 +142,9 @@ export function SignUpForm() {
           <div className="space-y-4">
             <div>
               <h2 className="text-3xl font-display font-bold text-white tracking-tight">
-                Join the Ghostwriter Network.
+                Join the <span className="text-[#69E300]">Ghostwriter Network.</span>
               </h2>
+              <p className="mt-2 text-white/40 font-medium italic">Create a Ghostwriter account</p>
               <p className="mt-2 text-white/40 font-medium italic">Initialize new profile...</p>
             </div>
           </div>

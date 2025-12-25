@@ -79,7 +79,7 @@ export function LoginForm() {
           <div className="space-y-4">
             <div>
               <h2 className="text-3xl font-display font-bold text-white tracking-tight">Welcome Back!</h2>
-              <p className="mt-2 text-white/40 font-medium italic">Login to your account<br />It's nice to see you again. Ready to code?</p>
+              <p className="mt-1 text-white/40 font-medium italic">Login to your account<br />It's nice to see you again. Ready to code?</p>
             </div>
           </div>
 
@@ -92,7 +92,7 @@ export function LoginForm() {
 
           <div className="space-y-6">
             <form onSubmit={handleSignIn} className="space-y-5">
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <label htmlFor="email" className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">
                   Network Identifier (Email)
                 </label>
