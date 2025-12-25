@@ -188,7 +188,7 @@ export function CTASection() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full min-h-[600px] bg-transparent overflow-hidden flex items-center justify-center py-20 px-6 rounded-3xl"
+      className="relative w-full min-h-[600px] bg-transparent overflow-hidden flex items-center justify-center py-20 px-6 rounded-3xl border-2 border-[#69E300]/40"
     >
       {/* Animated gradient background */}
       <div className="absolute inset-0 opacity-20">

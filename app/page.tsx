@@ -10,18 +10,22 @@ export default function Home() {
       <main className="pt-16">
         <HeroSection />
 
-        <section className="container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 py-20 space-y-32 max-w-[1400px]">
-          {/* How It Works Section */}
-          <HowItWorks />
+        <section className="container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 py-20 max-w-[1400px]">
+          <div className="space-y-32">
+            {/* How It Works Section */}
+            <HowItWorks />
 
-          {/* Key Features Section */}
-          <FeaturesSection />
+            {/* Key Features Section */}
+            <FeaturesSection />
 
-          {/* Testimonial Carousel Section */}
-          <TestimonialCarousel />
+            {/* Testimonial Carousel Section */}
+            <TestimonialCarousel />
+          </div>
 
           {/* CTA Section */}
-          <CTASection />
+          <div className="mt-8">
+            <CTASection />
+          </div>
         </section>
       </main>
     </div>

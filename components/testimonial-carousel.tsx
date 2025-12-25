@@ -286,7 +286,7 @@ export default function TestimonialCarousel() {
           <Button
             onClick={handleShareFeedback}
             disabled={isCheckingAuth}
-            className="h-14 px-8 rounded-full bg-white text-black hover:bg-white/90 font-bold text-base shadow-xl shadow-white/5"
+            className="h-14 px-8 rounded-full bg-[#69E300] text-black hover:bg-[#69E300]/90 font-bold text-base shadow-xl shadow-[#69E300]/5"
           >
             {isCheckingAuth ? "Syncing..." : "Share Your Experience"}
           </Button>
