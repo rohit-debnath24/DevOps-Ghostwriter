@@ -11,25 +11,20 @@ const _geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono
 const _spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" })
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title: "DevOps-Ghostwriter",
+  description: "Automate your infrastructure at the speed of thought with Ghostwriter's AI-powered DevOps platform",
+  generator: "Next.js",
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
+        url: "/logo.jpeg",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/icon-dark-32x32.png",
+        url: "/logo.jpeg",
         media: "(prefers-color-scheme: dark)",
       },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
     ],
-    apple: "/apple-icon.png",
   },
 }
 

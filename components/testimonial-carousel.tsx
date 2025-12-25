@@ -154,13 +154,13 @@ export default function TestimonialCarousel() {
 
   const fetchFeedbacks = async () => {
     try {
-      console.log("[v0] Fetching user feedbacks...")
+      console.log("Fetching user feedbacks...")
 
       // Get current user session for latest avatar
       const sessionRes = await fetch("/api/auth/session")
 
       if (!sessionRes.ok) {
-        console.error("[v0] Session check failed:", sessionRes.status)
+        console.error("Session check failed:", sessionRes.status)
         return
       }
 
@@ -172,12 +172,12 @@ export default function TestimonialCarousel() {
       const res = await fetch("/api/get-feedbacks")
 
       if (!res.ok) {
-        console.error("[v0] Feedback fetch failed:", res.status)
+        console.error("Feedback fetch failed:", res.status)
         return
       }
 
       const data = await res.json()
-      console.log("[v0] Fetched feedbacks:", data.feedbacks?.length || 0)
+      console.log("Fetched feedbacks:", data.feedbacks?.length || 0)
 
       if (data.feedbacks) {
         const formatted = data.feedbacks.map((f: any) => ({
@@ -191,7 +191,7 @@ export default function TestimonialCarousel() {
         setUserFeedbacks(formatted)
       }
     } catch (err) {
-      console.error("[v0] Failed to fetch feedbacks:", err)
+      console.error("Failed to fetch feedbacks:", err)
     }
   }
 

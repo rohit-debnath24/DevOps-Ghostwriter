@@ -1,6 +1,7 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Terminal, Menu } from "lucide-react"
+import { Menu } from "lucide-react"
 
 export function Navigation() {
   return (
@@ -8,27 +9,36 @@ export function Navigation() {
       <div className="container mx-auto flex h-16 items-center justify-between px-6 sm:px-8 lg:px-12 xl:px-16 max-w-[1400px]">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#69E300]/10 border border-[#69E300]/30 transition-all group-hover:bg-[#69E300]/20 group-hover:shadow-[0_0_15px_rgba(105,227,0,0.3)]">
-              <Terminal className="h-5 w-5 text-[#69E300]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#69E300]/10 border border-[#69E300]/30 transition-all group-hover:bg-[#69E300]/20 group-hover:shadow-[0_0_15px_rgba(105,227,0,0.3)] overflow-hidden">
+              <Image
+                src="/logo.jpeg"
+                alt="Ghostwriter Logo"
+                width={32}
+                height={32}
+                className="object-cover w-full h-full"
+              />
             </div>
             <span className="text-lg font-display font-bold tracking-tight text-white">Ghostwriter</span>
           </Link>
 
           <div className="hidden items-center gap-6 md:flex">
             <Link
-              href="/repositories"
+              href="/product"
               className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors"
             >
-              Repositories
+              Product
             </Link>
             <Link href="/agents" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
               Agents
             </Link>
-            <Link href="/audit" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
-              Audit
+            <Link href="/observability" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
+              Observability
             </Link>
-            <Link href="/docs" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
-              Docs
+            <Link href="/security" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
+              Security
+            </Link>
+            <Link href="/dashboard" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
+              Dashboard
             </Link>
           </div>
         </div>
@@ -38,7 +48,7 @@ export function Navigation() {
             <Link href="/login">Login</Link>
           </Button>
           <Button variant="ghost" size="sm" asChild className="hidden text-white/60 hover:text-white md:inline-flex">
-            <Link href="/sign-up">Sign Up</Link>
+            <Link href="/sign-up">Register</Link>
           </Button>
           <Button size="sm" className="bg-[#69E300] text-black hover:bg-[#5bc200] font-semibold">
             Deploy Agent
