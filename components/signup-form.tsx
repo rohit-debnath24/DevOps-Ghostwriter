@@ -117,7 +117,7 @@ export function SignUpForm() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0a0809] font-sans selection:bg-[#69E300]/30">
+    <div className="flex h-screen overflow-hidden bg-[#0a0809] font-sans selection:bg-[#69E300]/30 pt-16">
       {/* Left Side - Image */}
       <div className="relative hidden lg:flex w-1/2 flex-col items-center justify-center border-r border-white/5 bg-[#0a0809]">
         <div className="relative z-10 w-full h-full">
@@ -134,11 +134,11 @@ export function SignUpForm() {
       </div>
 
       {/* Right Side - Sign Up Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 relative overflow-hidden">
+      <div className="w-full lg:w-1/2 flex items-start justify-center p-6 md:p-12 pt-8 md:pt-12 relative overflow-y-auto">
         {/* Ambient Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#69E300]/5 blur-[120px] pointer-events-none" />
 
-        <div className="w-full max-w-md space-y-8 relative z-10">
+        <div className="w-full max-w-md space-y-8 relative z-10 pb-6">
           <div className="space-y-4">
             <Link href="/" className="inline-flex items-center gap-2 group">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#69E300]/10 border border-[#69E300]/30 transition-all group-hover:bg-[#69E300]/20">

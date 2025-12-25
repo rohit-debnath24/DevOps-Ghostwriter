@@ -54,7 +54,7 @@ export function LoginForm() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0a0809] font-sans selection:bg-[#69E300]/30">
+    <div className="flex h-screen overflow-hidden bg-[#0a0809] font-sans selection:bg-[#69E300]/30 pt-16">
       {/* Left Side - Image */}
       <div className="relative hidden lg:flex w-1/2 flex-col items-center justify-center border-r border-white/5 bg-[#0a0809]">
         <div className="relative z-10 w-full h-full">
