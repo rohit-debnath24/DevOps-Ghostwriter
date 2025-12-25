@@ -140,14 +140,6 @@ export function SignUpForm() {
 
         <div className="w-full max-w-md space-y-8 relative z-10 pb-6">
           <div className="space-y-4">
-            <Link href="/" className="inline-flex items-center gap-2 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#69E300]/10 border border-[#69E300]/30 transition-all group-hover:bg-[#69E300]/20">
-                <Terminal className="h-6 w-6 text-[#69E300]" />
-              </div>
-              <span className="text-xl font-display font-bold tracking-tight text-white uppercase tracking-[0.2em]">
-                Ghostwriter
-              </span>
-            </Link>
             <div>
               <h2 className="text-3xl font-display font-bold text-white tracking-tight">
                 Join the Ghostwriter Network.
@@ -273,7 +265,7 @@ export function SignUpForm() {
                   Initializing Profile...
                 </div>
               ) : (
-                "Register Operator"
+                "Register"
               )}
             </Button>
           </form>
@@ -312,11 +304,6 @@ export function SignUpForm() {
               Access Login Terminal
             </Link>
           </p>
-        </div>
-
-        {/* System Metadata Footer */}
-        <div className="absolute bottom-6 right-6 text-[9px] font-mono text-white/10 uppercase tracking-[0.4em] pointer-events-none hidden md:block">
-          System v4.0.2 // Node: 8f2-a9 // Latency: 12ms
         </div>
       </div>
     </div>
