@@ -9,7 +9,7 @@ export function Footer() {
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-2 group">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#69E300]/10 border border-[#69E300]/30">
-                <Terminal className="h-6 w-6 text-[#69E300]" />
+                <img src="/logo.png" alt="Ghostwriter Logo" className="h-6 w-6 object-contain" />
               </div>
               <span className="text-xl font-bold tracking-tight text-white uppercase tracking-widest">Ghostwriter</span>
             </Link>
