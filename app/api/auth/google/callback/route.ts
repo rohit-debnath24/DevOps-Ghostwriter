@@ -82,18 +82,18 @@ export async function GET(request: NextRequest) {
         }
 
         // Check if user exists
-        let user = findUserByGoogleId(googleUser.id)
+        let user = await findUserByGoogleId(googleUser.id)
 
         if (!user) {
             // Check if email is already used by local account
-            const existingUser = findUserByEmail(googleUser.email)
+            const existingUser = await findUserByEmail(googleUser.email)
 
-            if (existingUser && existingUser.provider === 'local') {
+            if (existingUser && existingUser.provider === 'email') {
                 return NextResponse.redirect(`${APP_URL}/login?error=local_account_exists`)
             }
 
             // Create new user
-            user = createUser({
+            user = await createUser({
                 email: googleUser.email,
                 name: googleUser.name,
                 firstName: googleUser.given_name,
@@ -104,10 +104,8 @@ export async function GET(request: NextRequest) {
             })
         } else {
             // Update user info
-            updateUser(user.userId, {
+            await updateUser(user.userId, {
                 name: googleUser.name,
-                firstName: googleUser.given_name,
-                lastName: googleUser.family_name,
                 avatar: googleUser.picture,
             })
         }

@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Find user by email
-        const user = findUserByEmail(email)
+        const user = await findUserByEmail(email)
 
         if (!user) {
             return NextResponse.json(
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if user registered with OAuth
-        if (user.provider !== 'local' || !user.password) {
+        if (user.provider !== 'email' || !user.password) {
             return NextResponse.json(
                 {
                     success: false,

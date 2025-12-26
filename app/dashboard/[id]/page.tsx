@@ -28,7 +28,27 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
 
   useEffect(() => {
     params.then(p => setId(p.id))
+    // Load repositories from database on mount
+    loadRepositories()
   }, [params])
+
+  // Load repositories from database
+  const loadRepositories = async () => {
+    setIsLoadingRepos(true)
+    try {
+      const response = await fetch('/api/repositories')
+      const data = await response.json()
+
+      if (response.ok && data.length > 0) {
+        setRepos(data)
+        console.log(`Loaded ${data.length} repositories from database`)
+      }
+    } catch (error) {
+      console.error('Error loading repositories:', error)
+    } finally {
+      setIsLoadingRepos(false)
+    }
+  }
 
   const handleConnectGitHub = async () => {
     // Redirect to GitHub App installation/authorization
@@ -50,7 +70,7 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
         title: "Success",
         description: "GitHub App installed successfully! Loading your repositories...",
       })
-      // Fetch repositories after successful installation
+      // Fetch repositories from GitHub and save to database
       fetchGitHubRepos()
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname)
@@ -135,6 +155,9 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
         description: `Loaded ${data.length} repositories from GitHub App`,
       })
       console.log('GitHub Repositories (App Installation):', data)
+
+      // Reload from database to get updated data with health scores
+      await loadRepositories()
     } catch (error) {
       console.error('Error connecting to GitHub:', error)
       toast({

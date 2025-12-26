@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = findUserByEmail(email)
+    const existingUser = await findUserByEmail(email)
     if (existingUser) {
       return NextResponse.json(
         {
@@ -57,13 +57,13 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await hashPassword(password)
 
     // Create new user
-    const user = createUser({
+    const user = await createUser({
       email,
       firstName,
       lastName,
       name: `${firstName} ${lastName}`,
       password: hashedPassword,
-      provider: 'local',
+      provider: 'email',
     })
 
     console.log("[Ghostwriter] New operator registered:", {

@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/jwt"
+import { saveRepositories } from "@/lib/repository"
+import { updateUser } from "@/lib/db"
 import jwt from 'jsonwebtoken'
 
 function generateGitHubAppJWT() {
@@ -102,8 +104,20 @@ export async function GET(request: NextRequest) {
             stars: repo.stargazers_count,
             forks: repo.forks_count,
             owner: repo.owner.login,
-            fullName: repo.full_name
+            fullName: repo.full_name,
+            private: repo.private,
+            default_branch: repo.default_branch
         }))
+
+        // Save repositories to database
+        await saveRepositories(session.userId, transformedRepos)
+
+        // Update user's installation ID
+        await updateUser(session.userId, {
+            githubInstallationId: installationId
+        })
+
+        console.log(`Saved ${transformedRepos.length} repositories for user ${session.userId}`)
 
         return NextResponse.json(transformedRepos)
 
