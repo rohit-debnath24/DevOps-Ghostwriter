@@ -10,6 +10,7 @@ import { UserProfileButton } from "@/components/user-profile-button"
 export function Navigation() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
     checkAuth()
@@ -20,10 +21,20 @@ export function Navigation() {
       const response = await fetch('/api/auth/session')
       const data = await response.json()
       setIsAuthenticated(data.authenticated)
+      if (data.authenticated && data.user) {
+        setUserId(data.user.userId)
+      }
     } catch (error) {
       console.error('Error checking auth:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleProtectedLink = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    if (!isAuthenticated) {
+      e.preventDefault()
+      window.location.href = '/login'
     }
   }
 
@@ -46,21 +57,47 @@ export function Navigation() {
 
           <div className="hidden items-center gap-6 md:flex">
             <Link
+              href="/"
+              className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors"
+            >
+              Home
+            </Link>
+            <Link
               href="/product"
               className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors"
             >
               Product
             </Link>
-            <Link href="/agents" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
+            <a
+              href="/#agents"
+              className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors"
+              onClick={(e) => {
+                e.preventDefault()
+                const element = document.getElementById('agents')
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' })
+                } else {
+                  window.location.href = '/#agents'
+                }
+              }}
+            >
               Agents
-            </Link>
-            <Link href="/observability" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
+            </a>
+            <Link
+              href={isAuthenticated && userId ? `/trace/${userId}` : '/login'}
+              onClick={(e) => handleProtectedLink(e, `/trace/${userId}`)}
+              className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors"
+            >
               Observability
             </Link>
             <Link href="/security" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
               Security
             </Link>
-            <Link href="/dashboard" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
+            <Link
+              href={isAuthenticated && userId ? `/dashboard/${userId}` : '/login'}
+              onClick={(e) => handleProtectedLink(e, `/dashboard/${userId}`)}
+              className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors"
+            >
               Dashboard
             </Link>
           </div>
