@@ -10,6 +10,7 @@ export interface SessionPayload {
     userId: string
     email: string
     name?: string
+    avatar?: string
     provider?: 'local' | 'github' | 'google'
     iat?: number
     exp?: number

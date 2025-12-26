@@ -117,6 +117,7 @@ export async function GET(request: NextRequest) {
             userId: user.userId,
             email: user.email,
             name: user.name,
+            avatar: user.avatar,
             provider: 'google',
         })
 

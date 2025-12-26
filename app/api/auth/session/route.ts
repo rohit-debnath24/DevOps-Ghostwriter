@@ -22,6 +22,7 @@ export async function GET() {
           userId: session.userId,
           email: session.email,
           name: session.name,
+          avatar: session.avatar,
           provider: session.provider,
         },
       },
