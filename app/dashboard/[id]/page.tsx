@@ -1,12 +1,67 @@
+"use client"
+
 import { RepositoryGrid } from "@/components/repository-grid"
 import { GlobalStats } from "@/components/global-stats"
 import { ActivityFeed } from "@/components/activity-feed"
 import { Shield, Activity, Terminal, ChevronRight, Search, Bell, Settings, Github, Send } from "lucide-react"
 import LaserFlow from "@/components/laser-flow"
 import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
+import { useToast } from "@/hooks/use-toast"
 
-export default async function DashboardPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+interface GitHubRepo {
+  id: number
+  name: string
+  description: string
+  language: string
+  topics: string[]
+  url: string
+  stars: number
+  forks: number
+}
+
+export default function DashboardPage({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string>("")
+  const [isLoadingRepos, setIsLoadingRepos] = useState(false)
+  const [repos, setRepos] = useState<GitHubRepo[]>([])
+  const { toast } = useToast()
+
+  useEffect(() => {
+    params.then(p => setId(p.id))
+  }, [params])
+
+  const handleConnectGitHub = async () => {
+    setIsLoadingRepos(true)
+    try {
+      const response = await fetch('/api/github/repos')
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to fetch repositories",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setRepos(data)
+      toast({
+        title: "Success",
+        description: `Loaded ${data.length} repositories from GitHub`,
+      })
+      console.log('GitHub Repositories:', data)
+    } catch (error) {
+      console.error('Error connecting to GitHub:', error)
+      toast({
+        title: "Connection Error",
+        description: "Failed to connect to GitHub. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingRepos(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-[#69E300]/30 font-sans">
@@ -57,8 +112,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
               size="icon"
               className="h-12 w-12 text-white/40 hover:text-[#69E300] transition-colors"
               title="Connect GitHub"
+              onClick={handleConnectGitHub}
+              disabled={isLoadingRepos}
             >
-              <Github className="h-5 w-5" />
+              <Github className={`h-5 w-5 ${isLoadingRepos ? 'animate-spin' : ''}`} />
             </Button>
             <div className="h-10 w-px bg-white/10" />
             <Button

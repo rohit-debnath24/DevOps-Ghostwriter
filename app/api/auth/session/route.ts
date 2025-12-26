@@ -1,13 +1,41 @@
 import { NextResponse } from "next/server"
+import { getSession } from '@/lib/jwt'
 
 export async function GET() {
-  // In a production app, this would check cookies/JWT tokens
   try {
-    return NextResponse.json({
-      authenticated: false,
-      user: null,
-    })
+    const session = await getSession()
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          authenticated: false,
+          user: null,
+        },
+        { status: 401 }
+      )
+    }
+
+    return NextResponse.json(
+      {
+        authenticated: true,
+        user: {
+          userId: session.userId,
+          email: session.email,
+          name: session.name,
+          provider: session.provider,
+        },
+      },
+      { status: 200 }
+    )
   } catch (error) {
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    console.error('[Ghostwriter] Session check error:', error)
+    return NextResponse.json(
+      {
+        authenticated: false,
+        user: null,
+      },
+      { status: 401 }
+    )
   }
 }
+

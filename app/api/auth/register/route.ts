@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { createSessionToken, setSessionCookie } from "@/lib/jwt"
+import { createUser, findUserByEmail, hashPassword } from "@/lib/db"
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,36 +41,65 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Mock registration logic - log to console for now
-    console.log("[v0] New operator registration attempt:", {
+    // Check if user already exists
+    const existingUser = findUserByEmail(email)
+    if (existingUser) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Identity already registered. Please authenticate via login terminal.",
+        },
+        { status: 409 },
+      )
+    }
+
+    // Hash password
+    const hashedPassword = await hashPassword(password)
+
+    // Create new user
+    const user = createUser({
+      email,
       firstName,
       lastName,
-      email,
+      name: `${firstName} ${lastName}`,
+      password: hashedPassword,
+      provider: 'local',
+    })
+
+    console.log("[Ghostwriter] New operator registered:", {
+      userId: user.userId,
+      email: user.email,
       timestamp: new Date().toISOString(),
     })
 
-    // TODO: Replace with actual database integration
-    // - Hash password with bcrypt
-    // - Store user in database
-    // - Send verification email
-    // - Create session token
+    // Create session token
+    const sessionToken = createSessionToken({
+      userId: user.userId,
+      email: user.email,
+      name: user.name,
+      provider: 'local',
+    })
 
-    // Simulate successful registration
+    // Set session cookie
+    await setSessionCookie(sessionToken)
+
+    // Return success response
     return NextResponse.json(
       {
         success: true,
         message: "Operator profile successfully initialized.",
         user: {
-          id: `op-${Date.now()}`,
-          firstName,
-          lastName,
-          email,
+          userId: user.userId,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          name: user.name,
         },
       },
       { status: 201 },
     )
   } catch (error) {
-    console.error("[v0] Registration error:", error)
+    console.error("[Ghostwriter] Registration error:", error)
     return NextResponse.json(
       {
         success: false,
@@ -78,3 +109,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+

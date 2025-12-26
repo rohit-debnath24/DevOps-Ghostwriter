@@ -44,13 +44,36 @@ export function LoginForm() {
     }
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      window.location.href = "/"
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.message || "Access Denied: Authentication subsystem failure.")
+        setIsLoading(false)
+        return
+      }
+
+      // Redirect to dashboard on success
+      window.location.href = `/dashboard/${data.user.userId}`
     } catch (err: any) {
       setError(err.message || "Access Denied: Authentication subsystem failure.")
-    } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleGoogleLogin = () => {
+    window.location.href = "/api/auth/google"
+  }
+
+  const handleGitHubLogin = () => {
+    window.location.href = "/api/auth/github"
   }
 
   return (
@@ -165,15 +188,17 @@ export function LoginForm() {
               <Button
                 variant="outline"
                 className="h-12 gap-3 bg-white/[0.02] border-white/5 text-white/60 hover:text-white hover:border-white/20 rounded-xl font-mono text-xs transition-all"
-                onClick={() => { }}
+                onClick={handleGoogleLogin}
+                type="button"
               >
-                <Image src="/google-logo.png" alt="Google" width={16} height={16} />
+                <Chrome className="w-4 h-4" />
                 Google
               </Button>
               <Button
                 variant="outline"
                 className="h-12 gap-3 bg-white/[0.02] border-white/5 text-white/60 hover:text-white hover:border-white/20 rounded-xl font-mono text-xs transition-all"
-                onClick={() => { }}
+                onClick={handleGitHubLogin}
+                type="button"
               >
                 <Github className="w-4 h-4" />
                 GitHub
