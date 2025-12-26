@@ -1,16 +1,21 @@
 import { nanoid } from 'nanoid'
+import connectDB from './mongodb'
+import User, { IUser } from '@/models/User'
 
-export interface User {
+export interface UserData {
     userId: string
     email: string
     firstName?: string
     lastName?: string
     name?: string
     password?: string // hashed, only for local auth
-    provider: 'local' | 'github' | 'google'
+    provider: 'email' | 'github' | 'google'
     githubId?: string
     googleId?: string
     avatar?: string
+    githubToken?: string
+    googleToken?: string
+    githubInstallationId?: string
     createdAt: Date
     updatedAt: Date
 }
@@ -42,82 +47,81 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 /**
- * In-memory user store (replace with database in production)
- */
-export const userStore = new Map<string, User>()
-
-/**
  * Find user by email
  */
-export function findUserByEmail(email: string): User | undefined {
-    for (const user of userStore.values()) {
-        if (user.email.toLowerCase() === email.toLowerCase()) {
-            return user
-        }
-    }
-    return undefined
+export async function findUserByEmail(email: string): Promise<UserData | null> {
+    await connectDB()
+    const user = await User.findOne({ email: email.toLowerCase() }).lean()
+    return user as UserData | null
 }
 
 /**
  * Find user by GitHub ID
  */
-export function findUserByGitHubId(githubId: string): User | undefined {
-    for (const user of userStore.values()) {
-        if (user.githubId === githubId) {
-            return user
-        }
-    }
-    return undefined
+export async function findUserByGitHubId(githubId: string): Promise<UserData | null> {
+    await connectDB()
+    const user = await User.findOne({ githubId }).lean()
+    return user as UserData | null
 }
 
 /**
  * Find user by Google ID
  */
-export function findUserByGoogleId(googleId: string): User | undefined {
-    for (const user of userStore.values()) {
-        if (user.googleId === googleId) {
-            return user
-        }
-    }
-    return undefined
+export async function findUserByGoogleId(googleId: string): Promise<UserData | null> {
+    await connectDB()
+    const user = await User.findOne({ googleId }).lean()
+    return user as UserData | null
+}
+
+/**
+ * Find user by user ID
+ */
+export async function findUserById(userId: string): Promise<UserData | null> {
+    await connectDB()
+    const user = await User.findOne({ userId }).lean()
+    return user as UserData | null
 }
 
 /**
  * Create a new user
  */
-export function createUser(userData: Partial<User>): User {
-    const user: User = {
+export async function createUser(userData: Partial<UserData>): Promise<UserData> {
+    await connectDB()
+
+    const user = new User({
         userId: generateUserId(),
-        email: userData.email!,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        name: userData.name,
+        email: userData.email!.toLowerCase(),
+        name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
         password: userData.password,
-        provider: userData.provider || 'local',
+        provider: userData.provider || 'email',
         githubId: userData.githubId,
         googleId: userData.googleId,
         avatar: userData.avatar,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    }
+        githubToken: userData.githubToken,
+        googleToken: userData.googleToken,
+        githubInstallationId: userData.githubInstallationId,
+    })
 
-    userStore.set(user.userId, user)
-    return user
+    await user.save()
+    return user.toObject() as UserData
 }
 
 /**
- * Update user
+ * Update an existing user
  */
-export function updateUser(userId: string, updates: Partial<User>): User | undefined {
-    const user = userStore.get(userId)
-    if (!user) return undefined
+export async function updateUser(userId: string, updates: Partial<UserData>): Promise<UserData | null> {
+    await connectDB()
 
-    const updatedUser = {
-        ...user,
-        ...updates,
-        updatedAt: new Date(),
-    }
+    const user = await User.findOneAndUpdate(
+        { userId },
+        {
+            $set: {
+                ...updates,
+                updatedAt: new Date()
+            }
+        },
+        { new: true }
+    ).lean()
 
-    userStore.set(userId, updatedUser)
-    return updatedUser
+    return user as UserData | null
 }

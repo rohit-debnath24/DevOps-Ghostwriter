@@ -2,6 +2,7 @@ import { HeroSection } from "@/components/hero-section"
 import { FeaturesSection } from "@/components/features-section"
 import { CTASection } from "@/components/cta-section"
 import { HowItWorks } from "@/components/how-it-works"
+import { AgentsSection } from "@/components/agents-section"
 import TestimonialCarousel from "@/components/testimonial-carousel"
 
 export default function Home() {
@@ -18,8 +19,14 @@ export default function Home() {
             {/* Key Features Section */}
             <FeaturesSection />
 
-            {/* Testimonial Carousel Section */}
-            <TestimonialCarousel />
+            {/* Agents and Testimonials Section with reduced spacing */}
+            <div className="space-y-16">
+              {/* Agents Section */}
+              <AgentsSection />
+
+              {/* Testimonial Carousel Section */}
+              <TestimonialCarousel />
+            </div>
           </div>
 
           {/* CTA Section */}

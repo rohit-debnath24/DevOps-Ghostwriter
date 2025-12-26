@@ -28,12 +28,116 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
 
   useEffect(() => {
     params.then(p => setId(p.id))
+    // Load repositories from database on mount
+    loadRepositories()
   }, [params])
 
-  const handleConnectGitHub = async () => {
+  // Load repositories from database
+  const loadRepositories = async () => {
     setIsLoadingRepos(true)
     try {
-      const response = await fetch('/api/github/repos')
+      const response = await fetch('/api/repositories')
+      const data = await response.json()
+
+      if (response.ok && data.length > 0) {
+        setRepos(data)
+        console.log(`Loaded ${data.length} repositories from database`)
+      }
+    } catch (error) {
+      console.error('Error loading repositories:', error)
+    } finally {
+      setIsLoadingRepos(false)
+    }
+  }
+
+  const handleConnectGitHub = async () => {
+    // Redirect to GitHub App installation/authorization
+    window.location.href = '/api/github/install'
+  }
+
+  // Check for GitHub connection status from URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const githubInstalled = urlParams.get('github_installed')
+    const githubConnected = urlParams.get('github_connected')
+    const error = urlParams.get('error')
+
+    console.log('Dashboard URL params:', { githubInstalled, githubConnected, error })
+
+    if (githubInstalled === 'true') {
+      console.log('GitHub App installed, fetching repositories...')
+      toast({
+        title: "Success",
+        description: "GitHub App installed successfully! Loading your repositories...",
+      })
+      // Fetch repositories from GitHub and save to database
+      fetchGitHubRepos()
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname)
+    } else if (githubConnected === 'true') {
+      toast({
+        title: "Success",
+        description: "GitHub connected successfully!",
+      })
+      // Fetch repositories after successful connection
+      fetchGitHubRepos()
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname)
+    } else if (error) {
+      let errorMessage = 'An error occurred with GitHub authorization'
+      switch (error) {
+        case 'session_expired':
+          errorMessage = 'Your session expired. Please log in again.'
+          break
+        case 'invalid_state':
+          errorMessage = 'Invalid authorization state. Please try again.'
+          break
+        case 'github_auth_failed':
+          errorMessage = 'GitHub authorization failed. Please try again.'
+          break
+        case 'missing_parameters':
+          errorMessage = 'Missing authorization parameters. Please try again.'
+          break
+      }
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
+
+  const fetchGitHubRepos = async () => {
+    setIsLoadingRepos(true)
+    try {
+      // Try to fetch from GitHub App installation first
+      const response = await fetch('/api/github/installation/repos')
+
+      if (response.status === 400) {
+        // No installation found, fall back to OAuth repos
+        const oauthResponse = await fetch('/api/github/repos')
+        const data = await oauthResponse.json()
+
+        if (!oauthResponse.ok) {
+          toast({
+            title: "Error",
+            description: data.error || "Failed to fetch repositories",
+            variant: "destructive",
+          })
+          return
+        }
+
+        setRepos(data)
+        toast({
+          title: "Success",
+          description: `Loaded ${data.length} repositories from GitHub`,
+        })
+        console.log('GitHub Repositories (OAuth):', data)
+        return
+      }
+
       const data = await response.json()
 
       if (!response.ok) {
@@ -48,9 +152,12 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
       setRepos(data)
       toast({
         title: "Success",
-        description: `Loaded ${data.length} repositories from GitHub`,
+        description: `Loaded ${data.length} repositories from GitHub App`,
       })
-      console.log('GitHub Repositories:', data)
+      console.log('GitHub Repositories (App Installation):', data)
+
+      // Reload from database to get updated data with health scores
+      await loadRepositories()
     } catch (error) {
       console.error('Error connecting to GitHub:', error)
       toast({
@@ -167,7 +274,7 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
               </Button>
             </div>
           </div>
-          <RepositoryGrid />
+          <RepositoryGrid repos={repos} isLoading={isLoadingRepos} />
         </div>
 
         {/* Activity & Security Section */}
