@@ -9,11 +9,15 @@ interface RepoHeaderProps {
 export function RepoHeader({ id }: RepoHeaderProps) {
   const repoName = "DevOps-Ghostwriter"
   const repoDescription = "Autonomous DevOps agents to automates PR audits, security, and docs with observability via W&B Weave."
+  const githubUsername = "BikramMondal5"
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
+          <h3 className="text-2xl font-bold text-white/50">
+            Welcome back, <span className="text-[#69E300] font-bold">{githubUsername}</span>!
+          </h3>
           <div className="flex items-center gap-2">
             <h1 className="font-display text-2xl font-bold text-white">{repoName}</h1>
             <div className="flex items-center gap-1.5 rounded-full bg-[#69E300]/10 px-2 py-0.5 border border-[#69E300]/20">

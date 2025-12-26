@@ -4,6 +4,7 @@ import { RepoHealthOverview } from "@/components/repo-health-overview"
 import { PRAuditTimeline } from "@/components/pr-audit-timeline"
 import { SecurityTrends } from "@/components/security-trends"
 import { AgentActivitySummary } from "@/components/agent-activity-summary"
+import { RepoContributors } from "@/components/repo-contributors"
 
 export default async function RepoDetailsPage({ params }: { params: { id: string } }) {
   const { id } = await params
@@ -39,6 +40,9 @@ export default async function RepoDetailsPage({ params }: { params: { id: string
           <aside className="space-y-12 lg:col-span-4">
             <section className="animate-in fade-in slide-in-from-right-4 duration-700 delay-400">
               <AgentActivitySummary />
+            </section>
+            <section className="animate-in fade-in slide-in-from-right-4 duration-700 delay-500">
+              <RepoContributors />
             </section>
           </aside>
         </div>
