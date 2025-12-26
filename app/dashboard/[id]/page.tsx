@@ -41,17 +41,17 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         </div>
       </div>
 
-      <main className="max-w-[75%] mx-auto px-6 -mt-32 relative z-30 space-y-12 mb-32">
+      <main className="container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 -mt-32 relative z-30 space-y-12 mb-32 max-w-[1400px]">
         {/* Glass Dashboard Navigation Bar */}
         <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl px-8 py-4 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative flex-1 max-w-3xl">
-              <textarea
-                placeholder="Paste GitHub PR URL here..."
-                className="bg-black/40 border border-white/5 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#69E300]/50 transition-all w-full placeholder:text-white/20 resize-none h-12 leading-relaxed"
-                rows={1}
-              />
-            </div>
+          <div className="relative flex-1">
+            <textarea
+              placeholder="Paste GitHub PR URL here..."
+              className="bg-black/40 border border-white/5 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#69E300]/50 transition-all w-full placeholder:text-white/20 resize-none h-12 leading-relaxed"
+              rows={1}
+            />
+          </div>
+          <div className="flex items-center gap-3 ml-6">
             <Button
               variant="ghost"
               size="icon"
@@ -78,7 +78,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
               <Settings className="h-5 w-5" />
             </Button>
             <Button
-              className="bg-[#69E300] text-black font-bold text-sm px-6 h-12 rounded-lg hover:bg-[#5bc500] transition-all ml-2 flex items-center gap-2"
+              className="bg-[#69E300] text-black font-bold text-sm px-6 h-12 rounded-lg hover:bg-[#5bc500] transition-all flex items-center gap-2"
               title="Submit PR for Analysis"
             >
               <Send className="h-4 w-4" />

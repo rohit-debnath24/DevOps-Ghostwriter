@@ -7,20 +7,25 @@ interface RepoHeaderProps {
 }
 
 export function RepoHeader({ id }: RepoHeaderProps) {
+  const repoName = "DevOps-Ghostwriter"
+  const repoDescription = "Autonomous DevOps agents to automates PR audits, security, and docs with observability via W&B Weave."
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-1">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <h1 className="font-display text-2xl font-bold text-white">{id}</h1>
+            <h1 className="font-display text-2xl font-bold text-white">{repoName}</h1>
             <div className="flex items-center gap-1.5 rounded-full bg-[#69E300]/10 px-2 py-0.5 border border-[#69E300]/20">
               <div className="h-1.5 w-1.5 rounded-full bg-[#69E300] animate-pulse" />
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#69E300]">Connected</span>
             </div>
           </div>
-          <p className="text-sm text-white/40">
-            Organization: <span className="text-white/60">ghostwriter-ai</span> • Branch:{" "}
-            <span className="font-mono text-white/60">main</span>
+          <p className="text-sm text-white/60 max-w-2xl">
+            {repoDescription}
+          </p>
+          <p className="text-xs text-white/40">
+            Branch: <span className="font-mono text-white/60">main</span>
           </p>
         </div>
 
