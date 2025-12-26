@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+google-generativeai
+weave
+python-dotenv
+requests
