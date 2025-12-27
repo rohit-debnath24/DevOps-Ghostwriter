@@ -8,7 +8,7 @@ const execAsync = promisify(exec)
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { prUrl } = body
+        const { prUrl, email } = body
 
         if (!prUrl) {
             return NextResponse.json({
@@ -27,7 +27,12 @@ export async function POST(request: NextRequest) {
 
         // Path to the python script
         const scriptPath = path.resolve(process.cwd(), 'fetch_real_pr.py')
-        const command = `python "${scriptPath}" "${prUrl}"`
+
+        // Construct command with optional email
+        let command = `python "${scriptPath}" "${prUrl}"`
+        if (email) {
+            command += ` --email "${email}"`
+        }
 
         console.log(`[API] Executing command: ${command}`)
 

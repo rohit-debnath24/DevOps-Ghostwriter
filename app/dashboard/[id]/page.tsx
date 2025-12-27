@@ -7,6 +7,7 @@ import { Shield, Activity, Terminal, ChevronRight, Search, Bell, Settings, Githu
 import LaserFlow from "@/components/laser-flow"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 
 interface GitHubRepo {
@@ -24,7 +25,9 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
   const [id, setId] = useState<string>("")
   const [isLoadingRepos, setIsLoadingRepos] = useState(false)
   const [repos, setRepos] = useState<GitHubRepo[] | undefined>(undefined)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
   const { toast } = useToast()
+  const router = useRouter()
 
   // PR Submission State
   const [prUrl, setPrUrl] = useState("")
@@ -47,7 +50,10 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prUrl }),
+        body: JSON.stringify({
+          prUrl,
+          email: userEmail
+        }),
       })
 
       const data = await response.json()
@@ -61,8 +67,28 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
 
       toast({
         title: "Analysis Started",
-        description: "PR has been submitted for dynamic analysis",
+        description: `PR submitted. Report will be sent to ${userEmail || 'the PR author'}. Redirecting...`,
       })
+
+      // Parse PR URL to extract ID
+      // Format: https://github.com/owner/repo/pull/number
+      try {
+        const urlObj = new URL(prUrl);
+        const parts = urlObj.pathname.split('/').filter(Boolean); // [owner, repo, pull, number]
+        if (parts.length >= 4 && parts[2] === 'pull') {
+          const owner = parts[0];
+          const repo = parts[1];
+          const number = parts[3];
+          const auditId = `${owner}%2F${repo}%2F${number}`; // URL encoded slash
+
+          console.log("Redirecting to audit:", auditId);
+          router.push(`/audit/${auditId}`);
+        } else {
+          console.warn("Could not parse PR URL for redirect:", prUrl);
+        }
+      } catch (e) {
+        console.error("URL parsing failed:", e);
+      }
 
       // Clear input
       setPrUrl("")
@@ -78,6 +104,23 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
       setIsSubmitting(false)
     }
   }
+
+  // Load user session
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        if (data.authenticated && data.user?.email) {
+          console.log("Logged in user email:", data.user.email);
+          setUserEmail(data.user.email);
+        }
+      } catch (e) {
+        console.error("Failed to fetch session:", e);
+      }
+    };
+    fetchSession();
+  }, []);
 
   // Fetch repositories from GitHub
   const fetchGitHubRepos = async (silent = false) => {
