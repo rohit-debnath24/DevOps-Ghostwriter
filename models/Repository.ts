@@ -40,9 +40,7 @@ const RepositorySchema = new Schema<IRepository>(
         fullName: {
             type: String,
             required: true,
-            unique: true,
-        },
-        description: {
+        }, description: {
             type: String,
             default: '',
         },

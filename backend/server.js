@@ -85,6 +85,11 @@ index 83db48f..5a3c20 100644
         });
         diffText = data;
         console.log(`Fetched diff (length: ${diffText.length})`);
+        console.log("----------------------------------------------------------------");
+        console.log(" RAW DIFF FETCHED FROM GITHUB:");
+        console.log("----------------------------------------------------------------");
+        console.log(diffText);
+        console.log("----------------------------------------------------------------");
       } catch (octokitError) {
         console.error('Error fetching diff from GitHub:', octokitError.message);
         return res.status(500).send('Failed to fetch diff');

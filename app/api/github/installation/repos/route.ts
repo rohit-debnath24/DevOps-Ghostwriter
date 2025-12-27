@@ -8,12 +8,46 @@ function generateGitHubAppJWT() {
     const appId = process.env.GITHUB_APP_ID
     const privateKey = process.env.GITHUB_APP_PRIVATE_KEY
 
+    console.log('[Debug] Generating JWT for App ID:', appId)
+    console.log('[Debug] Private Key present:', !!privateKey)
+
     if (!appId || !privateKey) {
+        console.error('GitHub App credentials missing in environment variables')
         throw new Error('GitHub App credentials not configured')
     }
 
-    // GitHub requires the private key newlines to be actual newlines
-    const formattedPrivateKey = privateKey.replace(/\\n/g, '\n')
+    // Handle different private key formats
+    let formattedPrivateKey = privateKey
+
+    // 1. Handle Base64 encoded keys (sometimes used to avoid newline issues)
+    if (!privateKey.includes('BEGIN RSA PRIVATE KEY') && !privateKey.includes('BEGIN PRIVATE KEY')) {
+        try {
+            const decoded = Buffer.from(privateKey, 'base64').toString('utf-8')
+            if (decoded.includes('BEGIN')) {
+                console.log('[Debug] Detected Base64 encoded private key, decoded successfully')
+                formattedPrivateKey = decoded
+            }
+        } catch (e) {
+            // Not base64 or failed to decode, ignore
+        }
+    }
+
+    // 2. Handle literal \n (common in .env files)
+    if (formattedPrivateKey.includes('\\n')) {
+        console.log('[Debug] Replacing literal \\n with actual newlines')
+        formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, '\n')
+    }
+
+    // 3. Ensure quotes didn't get included if user wrapped in quotes in .env but parser kept them
+    formattedPrivateKey = formattedPrivateKey.replace(/^"|"$/g, '').replace(/^'|'$/g, '')
+
+    console.log('[Debug] Final Private Key Line Count:', formattedPrivateKey.split('\n').length)
+    console.log('[Debug] Private Key starts with:', formattedPrivateKey.substring(0, 30) + '...')
+
+    // Validate key format
+    if (!formattedPrivateKey.includes('BEGIN')) {
+        console.error('[Error] Private Key appears invalid (missing header)')
+    }
 
     const now = Math.floor(Date.now() / 1000)
     const payload = {
@@ -22,10 +56,16 @@ function generateGitHubAppJWT() {
         iss: appId // GitHub App's identifier
     }
 
-    return jwt.sign(payload, formattedPrivateKey, { algorithm: 'RS256' })
+    try {
+        return jwt.sign(payload, formattedPrivateKey, { algorithm: 'RS256' })
+    } catch (error: any) {
+        console.error('[Error] Failed to sign JWT:', error.message)
+        throw new Error(`Failed to sign JWT: ${error.message}`)
+    }
 }
 
 async function getInstallationAccessToken(installationId: string) {
+    console.log('[Debug] Getting access token for installation:', installationId)
     const jwtToken = generateGitHubAppJWT()
 
     const response = await fetch(
@@ -43,7 +83,8 @@ async function getInstallationAccessToken(installationId: string) {
     if (!response.ok) {
         const errorText = await response.text()
         console.error('Failed to get installation token:', response.status, errorText)
-        throw new Error(`Failed to get installation access token: ${response.status}`)
+        // Include the actual error text from GitHub in the error message so we can see it in the frontend
+        throw new Error(`GitHub Authentication Failed (${response.status}): ${errorText}`)
     }
 
     const data = await response.json()
