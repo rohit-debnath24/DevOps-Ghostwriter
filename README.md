@@ -173,12 +173,3 @@ We welcome contributions from the community! Here's how you can help:
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
----
-
-<div align="center">
-
-**Built with ❤️ by [BikramMondal5](https://github.com/BikramMondal5)**
-
-⭐ Star us on GitHub — it motivates us to keep improving!
-
-</div>
