@@ -35,8 +35,9 @@ function calculateHealth(repo: GitHubRepo): number {
 }
 
 export function RepositoryGrid({ repos, isLoading }: RepositoryGridProps) {
-  // Use provided repos or mock data
-  const displayRepos = repos && repos.length > 0 ? repos : MOCK_REPOS
+  // Use provided repos or mock data. If repos is undefined, use MOCK_REPOS.
+  // If repos is [], show empty state.
+  const displayRepos = repos === undefined ? MOCK_REPOS : repos
 
   if (isLoading) {
     return (
@@ -58,6 +59,16 @@ export function RepositoryGrid({ repos, isLoading }: RepositoryGridProps) {
             </div>
           </div>
         ))}
+      </div>
+    )
+  }
+
+  if (displayRepos.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-white/10 bg-white/5">
+        <Github className="h-12 w-12 text-white/20 mb-4" />
+        <p className="text-white/50 font-medium">No repositories found</p>
+        <p className="text-white/30 text-xs mt-1">Connect your GitHub account to see your repositories</p>
       </div>
     )
   }
