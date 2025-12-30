@@ -7,15 +7,22 @@ from typing import Dict, List, Any
 import json
 import logging
 import warnings
+from dotenv import load_dotenv
+
+# Load environment variables from .env.local in the root directory
+env_path = Path(__file__).parent.parent.parent / ".env.local"
+load_dotenv(dotenv_path=env_path)
 
 from google.adk.agents import Agent
-from google.adk.models.lite_llm import LiteLlm
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.genai import types
 
-# Add parent directories to path to import worker agents
+# Add parent directories to path to import worker agents and cache_manager
 sys.path.append(str(Path(__file__).parent.parent))
+
+# Import cache manager
+from cache_manager import get_cache_manager
 
 # Import worker agents
 from workers_agents.Runtime_Validator import (
@@ -34,6 +41,13 @@ from workers_agents.Security_Auditor import (
 # Suppress warnings and configure logging
 warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.ERROR)
+
+# Initialize cache manager
+cache_manager = get_cache_manager(
+    cache_dir=str(Path(__file__).parent.parent / "agent_cache"),
+    default_ttl_hours=24
+)
+print(f"INFO: Cache manager initialized at {cache_manager.cache_dir}")
 
 """
 Orchestral Agent - Code Quality & Security Pipeline
@@ -125,6 +139,7 @@ async def run_runtime_validation(
 ) -> Dict[str, Any]:
     """
     Runs the Runtime Validator agent on the provided code.
+    Now includes caching to handle rate limits.
     
     Args:
         code_content: The code to validate
@@ -136,6 +151,17 @@ async def run_runtime_validation(
     print("\n" + "="*80)
     print("🔍 STARTING RUNTIME VALIDATION")
     print("="*80)
+    
+    agent_name = "orchestral_runtime_validator"
+    
+    # Check cache first
+    cached_response = cache_manager.get(agent_name, code_content)
+    if cached_response is not None:
+        print(f"✅ Cache HIT for {agent_name}")
+        print(f"✅ Runtime validation complete: {cached_response.get('total_issues', 0)} total issue(s)")
+        return cached_response
+    
+    print(f"⚠️ Cache MISS for {agent_name} - calling Google ADK API")
     
     # Create session for runtime validation
     await session_service.create_session(
@@ -193,6 +219,9 @@ async def run_runtime_validation(
         "issues": all_issues
     }
     
+    # Cache the result
+    cache_manager.set(agent_name, code_content, result)
+    
     print(f"✅ Runtime validation complete: {len(all_issues)} total issue(s)")
     
     return result
@@ -204,6 +233,7 @@ async def run_security_audit(
 ) -> Dict[str, Any]:
     """
     Runs the Security Auditor agent on the provided code.
+    Now includes caching to handle rate limits.
     
     Args:
         code_content: The code to audit
@@ -215,6 +245,17 @@ async def run_security_audit(
     print("\n" + "="*80)
     print("🔒 STARTING SECURITY AUDIT")
     print("="*80)
+    
+    agent_name = "orchestral_security_auditor"
+    
+    # Check cache first
+    cached_response = cache_manager.get(agent_name, code_content)
+    if cached_response is not None:
+        print(f"✅ Cache HIT for {agent_name}")
+        print("✅ Security audit complete")
+        return cached_response
+    
+    print(f"⚠️ Cache MISS for {agent_name} - calling Google ADK API")
     
     # Create session for security audit
     await session_service.create_session(
@@ -282,6 +323,9 @@ Return the final JSON report from generate_security_summary.
                 break
         except json.JSONDecodeError:
             continue
+    
+    # Cache the result
+    cache_manager.set(agent_name, code_content, security_result)
     
     print("✅ Security audit complete")
     

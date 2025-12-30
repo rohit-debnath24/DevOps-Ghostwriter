@@ -9,8 +9,24 @@ import ast
 import json
 import asyncio
 import os
+import sys
+from dotenv import load_dotenv
 
-os.environ["GOOGLE_API_KEY"] = ""
+# Add parent directory to import cache_manager
+sys.path.append(str(Path(__file__).parent.parent))
+from cache_manager import get_cache_manager
+
+# Load environment variables
+env_path = Path(__file__).parent.parent.parent / ".env.local"
+load_dotenv(dotenv_path=env_path)
+
+os.environ["GOOGLE_API_KEY"] = os.getenv("RUNTIME_VALIDATOR_API_KEY")
+
+# Initialize cache manager
+cache_manager = get_cache_manager(
+    cache_dir=str(Path(__file__).parent.parent / "agent_cache"),
+    default_ttl_hours=24
+)
 
 """
 Runtime Validator Agent (ADK-correct)
@@ -112,6 +128,16 @@ If no issues exist, return:
 
 async def validate_runtime():
     code = read_sample_file("sample.py")
+    agent_name = "runtime_validator_adk"
+    
+    # Check cache first
+    cached_response = cache_manager.get(agent_name, code)
+    if cached_response is not None:
+        print(f"✅ Cache HIT for {agent_name}")
+        print(json.dumps(cached_response, indent=2))
+        return cached_response
+    
+    print(f"⚠️ Cache MISS for {agent_name} - calling Google ADK API")
 
     static_issues = []
     static_issues.extend(detect_syntax_errors(code))
@@ -158,8 +184,12 @@ async def validate_runtime():
         "total_issues": len(all_issues),
         "issues": all_issues
     }
+    
+    # Cache the result
+    cache_manager.set(agent_name, code, result)
 
     print(json.dumps(result, indent=2))
+    return result
 
 
 # =========================================================

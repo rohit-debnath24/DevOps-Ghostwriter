@@ -4,8 +4,17 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 import asyncio
 import os
+from dotenv import load_dotenv
 
-os.environ["GOOGLE_API_KEY"] = "AIzaSyA2kzjhfglQU1i7E7ykKRPxUhEO6yENts0"
+# Load environment variables
+load_dotenv(".env.local")
+
+# Use environment variable for API key
+api_key = os.getenv("GOOGLE_API_KEY")
+if api_key:
+    os.environ["GOOGLE_API_KEY"] = api_key
+else:
+    print("WARNING: GOOGLE_API_KEY not found in environment variables.")
 
 def file_create(file_name: str, content: str) -> str:
     """Creates a file with the given name and content."""
