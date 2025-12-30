@@ -15,55 +15,63 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { formatDistanceToNow } from "date-fns"
 
-const AUDITS = [
-  {
-    id: "PR-1284",
-    title: "Implement zero-trust isolation for sandbox runtimes",
-    author: "alexpine",
-    timestamp: "2 hours ago",
-    status: "passed",
-    security: "No critical vulnerabilities found. 3 minor dependency updates recommended.",
-    runtime: "All 142 integration tests passed in isolated environment.",
-    docs: "Updated internal API documentation for sandbox isolation.",
-    ghostwriter: "This PR significantly improves security posture without performance regression.",
-  },
-  {
-    id: "PR-1282",
-    title: "Refactor orchestrator state management",
-    author: "sarah_dev",
-    timestamp: "5 hours ago",
-    status: "issues",
-    security: "Potential race condition identified in state transition logic.",
-    runtime: "Runtime validation failed on edge cases for concurrent requests.",
-    docs: "State machine documentation out of sync with implementation.",
-    ghostwriter: "I recommend addressing the concurrency issues before merging to maintain stability.",
-  },
-  {
-    id: "PR-1279",
-    title: "Add support for custom agent constraints",
-    author: "mike_audit",
-    timestamp: "1 day ago",
-    status: "failed",
-    security: "Input validation bypass detected in constraint parser.",
-    runtime: "Critical crash during stress testing of large constraint sets.",
-    docs: "No documentation updates found for new configuration options.",
-    ghostwriter: "Blocking merge due to security bypass and runtime instability.",
-  },
-]
+interface PRAuditTimelineProps {
+  audits: any[]
+}
 
-export function PRAuditTimeline() {
-  const [expandedId, setExpandedId] = useState<string | null>("PR-1284")
+export function PRAuditTimeline({ audits }: PRAuditTimelineProps) {
+  const [expandedId, setExpandedId] = useState<string | null>(audits.length > 0 ? audits[0].id : null)
+
+  // Transform audits data
+  const transformedAudits = audits.map(audit => {
+    const status = audit.result?.status === 'success' ? 'passed' :
+      audit.result?.status === 'error' ? 'failed' : 'issues'
+
+    const timestamp = audit.timestamp
+      ? formatDistanceToNow(new Date(audit.timestamp), { addSuffix: true })
+      : 'Unknown time'
+
+    return {
+      id: audit.id,
+      title: `PR #${audit.pr_id}`,
+      author: audit.repo?.split('/')[0] || 'Unknown',
+      timestamp,
+      status,
+      security: audit.security_snapshot || audit.result?.security_analysis || "No security analysis available",
+      runtime: audit.runtime_snapshot || audit.result?.runtime_validation || "No runtime validation available",
+      docs: audit.result?.documentation_status || "No documentation analysis available",
+      ghostwriter: audit.result?.comment || "No AI summary available",
+      confidenceScore: audit.result?.confidence_score ? Math.round(audit.result.confidence_score * 100) : null
+    }
+  })
+
+  if (transformedAudits.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold tracking-tight text-white">Audit Timeline</h2>
+        </div>
+        <div className="rounded-xl border border-white/5 bg-[#171717] p-8 text-center">
+          <p className="text-white/40">No audits found for this repository yet.</p>
+          <p className="text-xs text-white/30 mt-2">Submit a PR to start analyzing!</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold tracking-tight text-white">Audit Timeline</h2>
-        <div className="text-[11px] font-medium text-white/40 uppercase tracking-widest">Showing last 12 audits</div>
+        <div className="text-[11px] font-medium text-white/40 uppercase tracking-widest">
+          Showing {transformedAudits.length} audit{transformedAudits.length !== 1 ? 's' : ''}
+        </div>
       </div>
 
       <div className="relative space-y-4 before:absolute before:left-[17px] before:top-2 before:h-[calc(100%-16px)] before:w-px before:bg-white/5">
-        {AUDITS.map((audit) => (
+        {transformedAudits.map((audit) => (
           <div
             key={audit.id}
             className={cn(
@@ -91,10 +99,12 @@ export function PRAuditTimeline() {
                 </div>
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-[#69E300]">{audit.id}</span>
-                    <h3 className="font-semibold text-white transition-colors group-hover:text-[#69E300]">
-                      {audit.title}
-                    </h3>
+                    <span className="font-mono text-xs font-bold text-[#69E300]">{audit.title}</span>
+                    {audit.confidenceScore && (
+                      <span className="text-[10px] text-white/40">
+                        {audit.confidenceScore}% confidence
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 text-[11px] text-white/40">
                     <span>by {audit.author}</span>
@@ -134,21 +144,21 @@ export function PRAuditTimeline() {
                       <Shield className="h-3 w-3 text-[#69E300]" />
                       Security Finding
                     </div>
-                    <p className="text-xs text-white/70 leading-relaxed">{audit.security}</p>
+                    <p className="text-xs text-white/70 leading-relaxed whitespace-pre-wrap">{audit.security}</p>
                   </div>
                   <div className="space-y-2 rounded-lg bg-black/20 p-3 border border-white/5">
                     <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40">
                       <Terminal className="h-3 w-3 text-[#69E300]" />
                       Runtime Validation
                     </div>
-                    <p className="text-xs text-white/70 leading-relaxed">{audit.runtime}</p>
+                    <p className="text-xs text-white/70 leading-relaxed whitespace-pre-wrap">{audit.runtime}</p>
                   </div>
                   <div className="space-y-2 rounded-lg bg-black/20 p-3 border border-white/5">
                     <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40">
                       <FileText className="h-3 w-3 text-[#69E300]" />
                       Documentation
                     </div>
-                    <p className="text-xs text-white/70 leading-relaxed">{audit.docs}</p>
+                    <p className="text-xs text-white/70 leading-relaxed whitespace-pre-wrap">{audit.docs}</p>
                   </div>
                 </div>
 
@@ -159,13 +169,13 @@ export function PRAuditTimeline() {
                       Ghostwriter Summary
                     </div>
                     <Link
-                      href={`/audit/${audit.id}`}
+                      href={`/audit/${encodeURIComponent(audit.id)}`}
                       className="text-[10px] font-bold uppercase tracking-wider text-white/40 hover:text-[#69E300] transition-colors"
                     >
                       View Full Trace →
                     </Link>
                   </div>
-                  <p className="text-sm italic text-white/80 leading-relaxed">"{audit.ghostwriter}"</p>
+                  <p className="text-sm italic text-white/80 leading-relaxed whitespace-pre-wrap">"{audit.ghostwriter}"</p>
                 </div>
               </div>
             )}

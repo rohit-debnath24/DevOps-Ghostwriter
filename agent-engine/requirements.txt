@@ -1,6 +1,9 @@
 fastapi
 uvicorn
 google-generativeai
+google-adk
+groq
 weave
 python-dotenv
 requests
+pydantic

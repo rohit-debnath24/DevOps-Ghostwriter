@@ -116,6 +116,7 @@ export async function GET(request: NextRequest) {
             email: user.email,
             name: user.name,
             avatar: user.avatar,
+            username: user.email.split('@')[0],
             provider: 'google',
         })
 
@@ -124,7 +125,7 @@ export async function GET(request: NextRequest) {
         await setGoogleTokenCookie(accessToken)
 
         // Redirect to dashboard
-        const response = NextResponse.redirect(`${APP_URL}/dashboard/${user.userId}`)
+        const response = NextResponse.redirect(`${APP_URL}/dashboard/${user.email.split('@')[0]}`)
 
         // Clear oauth state cookie
         response.cookies.delete('oauth_state')

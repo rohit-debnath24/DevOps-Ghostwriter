@@ -11,6 +11,7 @@ export interface SessionPayload {
     email: string
     name?: string
     avatar?: string
+    username?: string
     provider?: 'local' | 'github' | 'google'
     iat?: number
     exp?: number

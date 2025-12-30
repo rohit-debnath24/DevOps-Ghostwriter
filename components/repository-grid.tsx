@@ -84,9 +84,7 @@ export function RepositoryGrid({ repos, isLoading }: RepositoryGridProps) {
         return (
           <a
             key={repo.id}
-            href={repo.url || '#'}
-            target={repo.url ? "_blank" : undefined}
-            rel={repo.url ? "noopener noreferrer" : undefined}
+            href={`/repo/${repo.id}`}
             className="group relative overflow-hidden rounded-xl border border-white/5 bg-[#171717] p-4 transition-all hover:border-[#69E300]/30 hover:shadow-[0_0_20px_rgba(105,227,0,0.1)] cursor-pointer"
           >
             <div className="flex items-start justify-between">

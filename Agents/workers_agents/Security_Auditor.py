@@ -17,7 +17,7 @@ from cache_manager import get_cache_manager
 env_path = Path(__file__).parent.parent.parent / ".env.local"
 load_dotenv(dotenv_path=env_path)
 
-os.environ["GOOGLE_API_KEY"] = os.getenv("RUNTIME_VALIDATOR_API_KEY")
+os.environ["GOOGLE_API_KEY"] = os.getenv("SECURITY_AUDITOR_API_KEY")
 
 # Initialize cache manager
 cache_manager = get_cache_manager(

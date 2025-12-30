@@ -160,6 +160,26 @@ app.post('/api/webhook/github', async (req, res) => {
 
     } catch (agentError) {
       console.error('Failed to contact Python Agent Engine:', agentError.message);
+
+      // Store a partial audit with error status
+      const auditKey = `${owner}/${repo}/${pull_number}`;
+      AUDITS[auditKey] = {
+        id: auditKey,
+        repo: `${owner}/${repo}`,
+        pr_id: pull_number,
+        timestamp: new Date().toISOString(),
+        result: {
+          status: 'error',
+          comment: `Failed to analyze PR: Python Agent Engine is not available. Please ensure the service is running on ${PYTHON_AGENT_URL}`,
+          confidence_score: 0,
+          error: agentError.message
+        },
+        runtime_snapshot: null,
+        security_snapshot: null,
+        diff: diffText
+      };
+      console.log(`Stored error audit for ${auditKey}`);
+      emailLog = "Skipped: Analysis failed.";
     }
 
     res.status(200).json({

@@ -67,7 +67,7 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
 
       toast({
         title: "Analysis Started",
-        description: `PR submitted. Report will be sent to ${userEmail || 'the PR author'}. Redirecting...`,
+        description: `PR submitted successfully. Analyzing PR... This may take a few seconds.`,
       })
 
       // Parse PR URL to extract ID
@@ -82,7 +82,11 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
           const auditId = `${owner}%2F${repo}%2F${number}`; // URL encoded slash
 
           console.log("Redirecting to audit:", auditId);
-          router.push(`/audit/${auditId}`);
+
+          // Give the backend time to process before redirecting
+          setTimeout(() => {
+            router.push(`/audit/${auditId}`);
+          }, 2000); // 2 second delay
         } else {
           console.warn("Could not parse PR URL for redirect:", prUrl);
         }

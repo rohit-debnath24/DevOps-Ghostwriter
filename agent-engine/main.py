@@ -9,6 +9,25 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import traceback
 
+# Import orchestral agent integration
+try:
+    from orchestral_integration import analyze_pr_with_orchestral_agents, get_cache_stats, clear_cache
+    ORCHESTRAL_AVAILABLE = True
+    print("INFO: Orchestral agent system loaded successfully")
+except ImportError as e:
+    ORCHESTRAL_AVAILABLE = False
+    print(f"WARNING: Orchestral agent system not available: {e}")
+    print("INFO: Falling back to simple agent implementation")
+
+# Import Groq agents (high-quota alternative)
+try:
+    from groq_agents import analyze_pr_groq
+    GROQ_AVAILABLE = True
+    print("INFO: Groq agent system loaded successfully")
+except ImportError as e:
+    GROQ_AVAILABLE = False
+    print(f"WARNING: Groq agent system not available: {e}")
+
 # Load environment variables
 load_dotenv('../.env.local')
 
@@ -16,10 +35,16 @@ load_dotenv('../.env.local')
 # This captures all inputs/outputs of functions decorated with @weave.op
 WEAVE_PROJECT = "devops-ghostwriter"
 try:
-    weave.init(WEAVE_PROJECT)
-    print(f"INFO: Weave initialized for project '{WEAVE_PROJECT}'")
+    # Check if WANDB_API_KEY is set, otherwise disable weave
+    if os.getenv("WANDB_API_KEY"):
+        weave.init(WEAVE_PROJECT)
+        print(f"INFO: Weave initialized for project '{WEAVE_PROJECT}'")
+    else:
+        print("INFO: WANDB_API_KEY not set. Weave observability is disabled.")
+        os.environ["WANDB_MODE"] = "disabled"
 except Exception as e:
     print(f"Warning: Failed to initialize Weave. Observability will be disabled. Error: {e}")
+    os.environ["WANDB_MODE"] = "disabled"
 
 # Configure Gemini
 api_key = os.getenv("GEMINI_API_KEY")
@@ -110,7 +135,7 @@ async def security_auditor_agent(diff_text: str) -> SecurityReport:
     """
     
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash", generation_config={"response_mime_type": "application/json"})
+        model = genai.GenerativeModel("gemini-2.5-flash", generation_config={"response_mime_type": "application/json"})
         response = model.generate_content(prompt)
         # Parse JSON to validate against Pydantic model
         data = json.loads(response.text)
@@ -158,7 +183,7 @@ async def runtime_validator_agent(diff_text: str) -> ValidationReport:
     """
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash", generation_config={"response_mime_type": "application/json"})
+        model = genai.GenerativeModel("gemini-2.5-flash", generation_config={"response_mime_type": "application/json"})
         response = model.generate_content(prompt)
         data = json.loads(response.text)
         return ValidationReport(**data)
@@ -205,7 +230,7 @@ async def ghostwriter_agent(security_report: SecurityReport, validation_report: 
     """
     
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash", generation_config={"response_mime_type": "application/json"})
+        model = genai.GenerativeModel("gemini-2.5-flash", generation_config={"response_mime_type": "application/json"})
         response = model.generate_content(prompt)
         data = json.loads(response.text)
         return FinalVerdict(**data)
@@ -252,9 +277,41 @@ async def orchestration_agent(request: AnalysisRequest):
 
 @app.post("/analyze")
 async def analyze_pr(request: AnalysisRequest):
+    """
+    Analyzes a Pull Request using available agent systems in priority order:
+    1. Groq (fastest, highest quota)
+    2. Orchestral agents (Google ADK with caching)
+    3. Simple Gemini agents (fallback)
+    """
     try:
-        result = await orchestration_agent(request)
-        return result
+        # Try Groq first (best quota)
+        if GROQ_AVAILABLE and os.getenv("GROQ_API_KEY"):
+            print(f"Using Groq Agent System for PR #{request.pr_id}")
+            result = await analyze_pr_groq(
+                repo_id=request.repo_id,
+                pr_id=request.pr_id,
+                diff_text=request.diff_text,
+                title=request.title
+            )
+            return result
+            
+        # Try orchestral agents (Google ADK with caching)
+        elif ORCHESTRAL_AVAILABLE:
+            print(f"Using Orchestral Agent System for PR #{request.pr_id}")
+            result = await analyze_pr_with_orchestral_agents(
+                repo_id=request.repo_id,
+                pr_id=request.pr_id,
+                diff_text=request.diff_text,
+                title=request.title
+            )
+            return result
+            
+        # Fall back to simple agent implementation
+        else:
+            print(f"Using Simple Agent System for PR #{request.pr_id}")
+            result = await orchestration_agent(request)
+            return result
+            
     except Exception as e:
         print(f"Error processing analysis: {e}")
         traceback.print_exc()
@@ -262,7 +319,33 @@ async def analyze_pr(request: AnalysisRequest):
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "service": "python-agent-engine-v2"}
+    return {
+        "status": "healthy",
+        "service": "python-agent-engine-v2",
+        "groq_agents": GROQ_AVAILABLE,
+        "orchestral_agents": ORCHESTRAL_AVAILABLE
+    }
+
+@app.get("/cache/stats")
+def cache_stats():
+    """Get cache statistics (only available with orchestral agents)."""
+    if not ORCHESTRAL_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Orchestral agent system not available")
+    try:
+        return get_cache_stats()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/cache/clear")
+def cache_clear():
+    """Clear all cached analysis results."""
+    if not ORCHESTRAL_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Orchestral agent system not available")
+    try:
+        success = clear_cache()
+        return {"success": success, "message": "Cache cleared" if success else "Failed to clear cache"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
