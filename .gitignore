@@ -2,15 +2,12 @@
 
 # dependencies
 /node_modules
-<<<<<<< HEAD
 /Agents/venv
-=======
-backend/node_modules
-  
->>>>>>> 908079cfa04b75ecc9ead2310ec2e2a8fd4c5721
 # next.js
 /.next/
 /out/
+
+agent_cache/
 
 # production
 /build
