@@ -1,6 +1,6 @@
 # 🤖⚙️ DevOps-Ghostwriter – Autonomous DevOps AI Agent
 
-![Preview Image](screenshot.png)
+![Preview Image](public/dashboard.png)
 
 An intelligent multi-agent AI system that acts as your virtual DevOps engineer. Monitor GitHub Pull Requests, perform deep security audits, execute code in sandboxes, and auto-generate documentation — all while maintaining full observability through Weights & Biases Weave. Sit back, relax ☕, and let AI handle your DevOps workflows!
 

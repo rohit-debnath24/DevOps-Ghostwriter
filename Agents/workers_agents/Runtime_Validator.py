@@ -127,17 +127,33 @@ If no issues exist, return:
 # =========================================================
 
 async def validate_runtime():
+    """Main validation pipeline that reads sample.py, checks cache, and validates code."""
+    print("\n" + "="*70)
+    print("🔍 RUNTIME VALIDATOR AGENT")
+    print("="*70)
+    
+    # Read sample.py from the same directory
+    print("\n📖 Reading sample.py...")
     code = read_sample_file("sample.py")
+    print(f"✅ Successfully read {len(code)} characters from sample.py")
+    
     agent_name = "runtime_validator_adk"
     
     # Check cache first
+    print(f"\n🔍 Checking cache for {agent_name}...")
     cached_response = cache_manager.get(agent_name, code)
     if cached_response is not None:
-        print(f"✅ Cache HIT for {agent_name}")
+        print(f"✅ Cache HIT! Returning cached response.")
+        print(f"   (No API call needed - using cached result)\n")
+        print("="*70)
+        print("VALIDATION RESULT (from cache):")
+        print("="*70)
         print(json.dumps(cached_response, indent=2))
+        print("="*70)
         return cached_response
     
-    print(f"⚠️ Cache MISS for {agent_name} - calling Google ADK API")
+    print(f"⚠️ Cache MISS - Calling Google ADK API...")
+    print(f"   (This response will be cached for future use)\n")
 
     static_issues = []
     static_issues.extend(detect_syntax_errors(code))
@@ -185,10 +201,16 @@ async def validate_runtime():
         "issues": all_issues
     }
     
-    # Cache the result
+    # Cache the result for future use
+    print(f"\n💾 Caching response for agent: {agent_name}")
     cache_manager.set(agent_name, code, result)
+    print(f"✅ Response cached successfully!\n")
 
+    print("="*70)
+    print("VALIDATION RESULT:")
+    print("="*70)
     print(json.dumps(result, indent=2))
+    print("="*70)
     return result
 
 

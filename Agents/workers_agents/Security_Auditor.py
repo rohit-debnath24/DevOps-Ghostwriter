@@ -356,12 +356,15 @@ def audit_pr_diff(code_content: str, session_service: InMemorySessionService,
     agent_name = "security_auditor_adk"
     
     # Check cache first
+    print(f"\n🔍 Checking cache for {agent_name}...")
     cached_response = cache_manager.get(agent_name, code_content)
     if cached_response is not None:
-        print(f"✅ Cache HIT for {agent_name}")
+        print(f"✅ Cache HIT! Returning cached response.")
+        print(f"   (No API call needed - using cached result)\n")
         return cached_response if isinstance(cached_response, str) else json.dumps(cached_response, indent=2)
     
-    print(f"⚠️ Cache MISS for {agent_name} - calling Google ADK API")
+    print(f"⚠️ Cache MISS - Calling Google ADK API...")
+    print(f"   (This response will be cached for future use)\n")
     
     # Create the runner with the security auditor agent
     runner = Runner(
@@ -431,10 +434,12 @@ def audit_pr_diff(code_content: str, session_service: InMemorySessionService,
     
     if not final_response:
         print("⚠️ Warning: No text content found in agent responses")
-        final_response = "No response received from agent. Please check Ollama is running and the model is available."
+        final_response = "No response received from agent. Please check the API configuration and try again."
     else:
-        # Cache the successful response
+        # Cache the successful response for future use
+        print(f"\n💾 Caching response for agent: {agent_name}")
         cache_manager.set(agent_name, code_content, final_response)
+        print(f"✅ Response cached successfully!\n")
     
     return final_response
 
@@ -443,7 +448,8 @@ if __name__ == "__main__":
     import asyncio
     
     async def main():
-        print("🔍 Starting Security Audit...")
+        print("\n" + "=" * 70)
+        print("🔒 SECURITY AUDITOR AGENT")
         print("=" * 70)
         
         # ADK Configuration
