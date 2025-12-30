@@ -7,6 +7,7 @@ export interface IUser extends Document {
     password?: string
     avatar?: string
     githubId?: string
+    githubUsername?: string
     googleId?: string
     provider: 'email' | 'github' | 'google'
     githubToken?: string
@@ -47,6 +48,11 @@ const UserSchema = new Schema<IUser>(
             type: String,
             unique: true,
             sparse: true, // Allows multiple null values
+            index: true,
+        },
+        githubUsername: {
+            type: String,
+            required: false,
             index: true,
         },
         googleId: {

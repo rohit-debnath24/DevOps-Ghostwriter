@@ -61,7 +61,8 @@ export function LoginForm() {
       }
 
       // Redirect to dashboard on success
-      window.location.href = `/dashboard/${data.user.userId}`
+      const username = email.split('@')[0]
+      window.location.href = `/dashboard/${username}`
     } catch (err: any) {
       setError(err.message || "Access Denied: Authentication subsystem failure.")
       setIsLoading(false)

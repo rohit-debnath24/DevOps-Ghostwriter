@@ -121,12 +121,14 @@ export async function GET(request: NextRequest) {
                 name: githubUser.name || githubUser.login,
                 provider: 'github',
                 githubId: String(githubUser.id),
+                githubUsername: githubUser.login,
                 avatar: githubUser.avatar_url,
             })
         } else {
             // Update user info
             await updateUser(user.userId, {
                 name: githubUser.name || githubUser.login,
+                githubUsername: githubUser.login,
                 avatar: githubUser.avatar_url,
             })
         }
@@ -137,6 +139,7 @@ export async function GET(request: NextRequest) {
             email: user.email,
             name: user.name,
             avatar: user.avatar,
+            username: githubUser.login,
             provider: 'github',
         })
 
@@ -145,7 +148,7 @@ export async function GET(request: NextRequest) {
         await setGitHubTokenCookie(accessToken)
 
         // Redirect to dashboard
-        const response = NextResponse.redirect(`${APP_URL}/dashboard/${user.userId}`)
+        const response = NextResponse.redirect(`${APP_URL}/dashboard/${githubUser.login}`)
 
         // Clear oauth state cookie
         response.cookies.delete('oauth_state')

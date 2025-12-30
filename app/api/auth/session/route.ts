@@ -23,6 +23,7 @@ export async function GET() {
           email: session.email,
           name: session.name,
           avatar: session.avatar,
+          username: session.username,
           provider: session.provider,
         },
       },

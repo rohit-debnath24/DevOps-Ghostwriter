@@ -1,42 +1,81 @@
 import { ShieldCheck, Activity, FileText, Zap, TrendingUp, TrendingDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const METRICS = [
-  {
-    label: "Security Health",
-    value: "94",
-    trend: "+2.4%",
-    up: true,
-    icon: ShieldCheck,
-    description: "Vulnerability-free code segments",
-  },
-  {
-    label: "Code Stability",
-    value: "98.2%",
-    trend: "+0.5%",
-    up: true,
-    icon: Activity,
-    description: "Runtime validation pass rate",
-  },
-  {
-    label: "Docs Coverage",
-    value: "87%",
-    trend: "-1.2%",
-    up: false,
-    icon: FileText,
-    description: "Auto-generated documentation",
-  },
-  {
-    label: "AI Confidence",
-    value: "96",
-    trend: "+1.1%",
-    up: true,
-    icon: Zap,
-    description: "Aggregated agent certainty",
-  },
-]
+interface RepoHealthOverviewProps {
+  repository: {
+    health?: number
+    status: string
+  }
+  audits: any[]
+}
 
-export function RepoHealthOverview() {
+export function RepoHealthOverview({ repository, audits }: RepoHealthOverviewProps) {
+  // Calculate metrics from actual data
+  const calculateMetrics = () => {
+    const securityHealth = repository.health || 70
+
+    // Calculate stability from audits
+    const passedAudits = audits.filter(a => a.result?.status === 'success' || a.result?.status === 'passed').length
+    const totalAudits = audits.length || 1
+    const stability = Math.round((passedAudits / totalAudits) * 100)
+
+    // Calculate docs coverage (estimate based on audits that mention documentation)
+    const auditsWithDocs = audits.filter(a =>
+      a.result?.comment?.toLowerCase().includes('doc') ||
+      a.result?.comment?.toLowerCase().includes('documentation')
+    ).length
+    const docsCoverage = Math.min(Math.round((auditsWithDocs / totalAudits) * 100), 100)
+
+    // Calculate AI confidence (average from audits)
+    const avgConfidence = audits.length > 0
+      ? Math.round(audits.reduce((acc, a) => acc + ((a.result?.confidence_score || 0.5) * 100), 0) / audits.length)
+      : 85
+
+    return {
+      securityHealth,
+      stability: isNaN(stability) ? 85 : stability,
+      docsCoverage: isNaN(docsCoverage) ? 75 : docsCoverage,
+      aiConfidence: isNaN(avgConfidence) ? 85 : avgConfidence
+    }
+  }
+
+  const metrics = calculateMetrics()
+
+  const METRICS = [
+    {
+      label: "Security Health",
+      value: metrics.securityHealth.toString(),
+      trend: "+2.4%",
+      up: true,
+      icon: ShieldCheck,
+      description: "Vulnerability-free code segments",
+    },
+    {
+      label: "Code Stability",
+      value: `${metrics.stability}%`,
+      trend: "+0.5%",
+      up: metrics.stability >= 85,
+      icon: Activity,
+      description: "Runtime validation pass rate",
+    },
+    {
+      label: "Docs Coverage",
+      value: `${metrics.docsCoverage}%`,
+      trend: "-1.2%",
+      up: metrics.docsCoverage >= 80,
+      icon: FileText,
+      description: "Auto-generated documentation",
+    },
+    {
+      label: "AI Confidence",
+      value: metrics.aiConfidence.toString(),
+      trend: "+1.1%",
+      up: true,
+      icon: Zap,
+      description: "Aggregated agent certainty",
+    },
+  ]
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {METRICS.map((metric) => (

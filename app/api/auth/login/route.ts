@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
             userId: user.userId,
             email: user.email,
             name: user.name,
+            username: user.email.split('@')[0],
             provider: 'local',
         })
 
