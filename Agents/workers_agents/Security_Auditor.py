@@ -6,9 +6,24 @@ import os
 from pathlib import Path
 from datetime import datetime
 import json
+import sys
+from dotenv import load_dotenv
 
+# Add parent directory to import cache_manager
+sys.path.append(str(Path(__file__).parent.parent))
+from cache_manager import get_cache_manager
 
-os.environ["GOOGLE_API_KEY"] = ""
+# Load environment variables
+env_path = Path(__file__).parent.parent.parent / ".env.local"
+load_dotenv(dotenv_path=env_path)
+
+os.environ["GOOGLE_API_KEY"] = os.getenv("RUNTIME_VALIDATOR_API_KEY")
+
+# Initialize cache manager
+cache_manager = get_cache_manager(
+    cache_dir=str(Path(__file__).parent.parent / "agent_cache"),
+    default_ttl_hours=24
+)
 
 """
 Security Auditor Agent for PR Code Review
@@ -16,7 +31,7 @@ Scans code diffs for security vulnerabilities including:
 - Hardcoded secrets (API keys, passwords, tokens)
 - SQL injection vulnerabilities
 - Vulnerable dependencies
-- Common security anti-patterns 
+- Common security anti-patterns
 """
 
 import re
@@ -326,6 +341,7 @@ def audit_pr_diff(code_content: str, session_service: InMemorySessionService,
                   app_name: str, user_id: str, session_id: str) -> str:
     """
     Main function to audit code for security issues using ADK Runner.
+    Now includes caching to handle rate limits.
     
     Args:
         code_content: The code content to audit
@@ -337,6 +353,16 @@ def audit_pr_diff(code_content: str, session_service: InMemorySessionService,
     Returns:
         Security audit report as a string
     """
+    agent_name = "security_auditor_adk"
+    
+    # Check cache first
+    cached_response = cache_manager.get(agent_name, code_content)
+    if cached_response is not None:
+        print(f"✅ Cache HIT for {agent_name}")
+        return cached_response if isinstance(cached_response, str) else json.dumps(cached_response, indent=2)
+    
+    print(f"⚠️ Cache MISS for {agent_name} - calling Google ADK API")
+    
     # Create the runner with the security auditor agent
     runner = Runner(
         agent=security_auditor,
@@ -405,7 +431,10 @@ def audit_pr_diff(code_content: str, session_service: InMemorySessionService,
     
     if not final_response:
         print("⚠️ Warning: No text content found in agent responses")
-        return "No response received from agent. Please check Ollama is running and the model is available."
+        final_response = "No response received from agent. Please check Ollama is running and the model is available."
+    else:
+        # Cache the successful response
+        cache_manager.set(agent_name, code_content, final_response)
     
     return final_response
 

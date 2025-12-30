@@ -2,10 +2,16 @@ import os
 import time
 import sqlite3
 import pickle
+from pathlib import Path
+from dotenv import load_dotenv
 
-API_KEY = ""
+# Load environment variables from .env.local in the root directory
+env_path = Path(__file__).parent.parent.parent / ".env.local"
+load_dotenv(dotenv_path=env_path)
 
-DB_PASSWORD = "admin123"
+API_KEY = os.getenv("API_KEY", "")
+
+DB_PASSWORD = os.getenv("DB_PASSWORD", "admin123")
 
 def get_user(user_id):
     conn = sqlite3.connect("users.db")

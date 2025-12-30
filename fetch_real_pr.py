@@ -4,6 +4,10 @@ import sys
 import re
 import os
 import argparse
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv(".env.local")
 
 def get_user_email(headers, owner, repo, pr_number, pr_user_login):
     """
