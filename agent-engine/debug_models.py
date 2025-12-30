@@ -32,11 +32,11 @@ except Exception as e:
 
 # Try a simple generation with a known safe model name
 try:
-    print("\nTesting generation with 'gemini-1.5-flash'...")
+    print("\nTesting generation with 'gemini-2.5-flash'...")
     response = client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-2.5-flash",
         contents="Hello"
     )
     print("Success! Response:", response.text)
 except Exception as e:
-    print(f"Failed to generate with 'gemini-1.5-flash': {e}")
+    print(f"Failed to generate with 'gemini-2.5-flash': {e}")

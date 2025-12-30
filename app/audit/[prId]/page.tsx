@@ -37,8 +37,39 @@ export default async function AuditCenterPage({ params }: { params: { prId: stri
   if (!auditData) {
     return (
       <main className="min-h-screen bg-[#0A0809] flex flex-col items-center justify-center text-white">
-        <h1 className="text-4xl font-bold mb-4">Audit Not Found</h1>
-        <p className="text-white/50">Could not find audit logs for ID: {prId}</p>
+        <Navigation />
+        <div className="flex flex-col items-center justify-center flex-1 px-4">
+          <div className="h-3 w-3 rounded-full bg-[#69E300] animate-pulse mb-6" />
+          <h1 className="text-4xl font-bold mb-4">Audit Not Found</h1>
+          <p className="text-white/50 text-center max-w-md mb-6">
+            Could not find audit logs for ID: {prId}
+          </p>
+          <div className="bg-white/5 border border-white/10 rounded-lg p-6 max-w-xl">
+            <h2 className="text-lg font-semibold mb-3 text-[#69E300]">Possible Reasons:</h2>
+            <ul className="space-y-2 text-sm text-white/70">
+              <li className="flex items-start gap-2">
+                <span className="text-[#69E300] mt-0.5">•</span>
+                <span>The PR analysis is still in progress. Please wait a few moments and refresh the page.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#69E300] mt-0.5">•</span>
+                <span>The backend services (Python Agent on port 8000 or Node.js Backend on port 3001) may not be running.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#69E300] mt-0.5">•</span>
+                <span>The PR URL might be invalid or inaccessible.</span>
+              </li>
+            </ul>
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <a
+                href="/dashboard"
+                className="inline-flex items-center gap-2 text-[#69E300] hover:underline text-sm font-medium"
+              >
+                ← Back to Dashboard
+              </a>
+            </div>
+          </div>
+        </div>
       </main>
     )
   }

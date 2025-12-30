@@ -8,7 +8,7 @@
 /out/
 
 agent_cache/
-
+backend/node_modules/
 # production
 /build
  
