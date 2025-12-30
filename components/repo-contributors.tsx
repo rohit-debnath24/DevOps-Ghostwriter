@@ -4,20 +4,37 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
-interface RepoContributorsProps {
-    contributors: Array<{
-        id: number
-        name: string
-        avatar: string
-        commits: number
-        prs: number
-        role: string
-        profileUrl?: string
-    }>
+interface Contributor {
+    id: number
+    name: string
+    avatar: string
+    commits: number
+    prs: number
+    role: string
+    profileUrl?: string
 }
 
-export function RepoContributors({ contributors }: RepoContributorsProps) {
-    if (contributors.length === 0) {
+interface RepoContributorsProps {
+    contributors: Contributor[]
+    owner: Contributor | null
+}
+
+export function RepoContributors({ contributors, owner }: RepoContributorsProps) {
+    // Combine owner and contributors, with owner first if available
+    const allContributors: Contributor[] = []
+
+    if (owner) {
+        allContributors.push(owner)
+    }
+
+    // Add other contributors (excluding owner if they're in the contributors list)
+    contributors.forEach(contributor => {
+        if (!owner || contributor.name !== owner.name) {
+            allContributors.push(contributor)
+        }
+    })
+
+    if (allContributors.length === 0) {
         return (
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -35,13 +52,13 @@ export function RepoContributors({ contributors }: RepoContributorsProps) {
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold tracking-tight text-white">Top Contributors</h2>
                 <Badge variant="outline" className="border-[#69E300]/20 bg-[#69E300]/10 text-[#69E300] text-[10px] font-bold uppercase tracking-widest">
-                    {contributors.length} Active
+                    {allContributors.length} Active
                 </Badge>
             </div>
 
             <div className="rounded-xl border border-white/5 bg-[#171717] p-6">
-                <div className="h-[240px] overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-white/20">
-                    {contributors.slice(0, 8).map((contributor, index) => (
+                <div className={`${allContributors.length > 2 ? 'h-[240px] overflow-y-auto' : ''} space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-white/20`}>
+                    {allContributors.slice(0, 8).map((contributor, index) => (
                         <Link
                             key={contributor.id}
                             href={contributor.profileUrl || '#'}
@@ -59,9 +76,9 @@ export function RepoContributors({ contributors }: RepoContributorsProps) {
                                                 .join("")}
                                         </AvatarFallback>
                                     </Avatar>
-                                    {index === 0 && (
-                                        <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#69E300] text-[10px] font-black text-black">
-                                            1
+                                    {contributor.role === 'Repository Owner' && (
+                                        <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#69E300] text-[10px] font-black text-black">
+                                            👑
                                         </div>
                                     )}
                                 </div>
@@ -93,13 +110,13 @@ export function RepoContributors({ contributors }: RepoContributorsProps) {
                     <div className="space-y-1 text-center">
                         <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Total Commits</div>
                         <div className="text-2xl font-black text-white">
-                            {contributors.reduce((sum, c) => sum + c.commits, 0)}
+                            {allContributors.reduce((sum, c) => sum + c.commits, 0)}
                         </div>
                     </div>
                     <div className="space-y-1 text-center">
                         <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Total PRs</div>
                         <div className="text-2xl font-black text-[#69E300]">
-                            {contributors.reduce((sum, c) => sum + c.prs, 0)}
+                            {allContributors.reduce((sum, c) => sum + c.prs, 0)}
                         </div>
                     </div>
                 </div>

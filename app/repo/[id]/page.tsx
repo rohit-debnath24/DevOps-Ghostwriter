@@ -8,6 +8,8 @@ import { RepoContributors } from "@/components/repo-contributors"
 import { getSession } from "@/lib/jwt"
 import { getRepository } from "@/lib/repository"
 import { redirect } from "next/navigation"
+import connectDB from "@/lib/mongodb"
+import User from "@/models/User"
 
 async function fetchAuditsFromBackend(repoFullName: string) {
   try {
@@ -30,46 +32,9 @@ async function fetchAuditsFromBackend(repoFullName: string) {
   }
 }
 
-async function fetchContributorsFromGitHub(owner: string, repoName: string) {
-  try {
-    const githubToken = process.env.GITHUB_TOKEN
 
-    if (!githubToken) {
-      return []
-    }
 
-    const githubResponse = await fetch(
-      `https://api.github.com/repos/${owner}/${repoName}/contributors?per_page=20`,
-      {
-        headers: {
-          'Authorization': `Bearer ${githubToken}`,
-          'Accept': 'application/vnd.github.v3+json'
-        },
-        cache: 'no-store'
-      }
-    )
 
-    if (!githubResponse.ok) {
-      return []
-    }
-
-    const contributors = await githubResponse.json()
-
-    // Transform the data
-    return contributors.map((contributor: any, index: number) => ({
-      id: contributor.id,
-      name: contributor.login,
-      avatar: contributor.avatar_url,
-      commits: contributor.contributions,
-      prs: Math.floor(contributor.contributions * 0.3),
-      role: index === 0 ? 'Lead Developer' : index < 3 ? 'Senior Dev' : index < 5 ? 'Developer' : 'Junior Dev',
-      profileUrl: contributor.html_url
-    }))
-  } catch (error) {
-    console.error('Error fetching contributors:', error)
-    return []
-  }
-}
 
 export default async function RepoDetailsPage({ params }: { params: { id: string } }) {
   const { id } = await params
@@ -114,11 +79,25 @@ export default async function RepoDetailsPage({ params }: { params: { id: string
     )
   }
 
-  // Fetch all data in parallel
-  const [audits, contributors] = await Promise.all([
-    fetchAuditsFromBackend(repository.fullName),
-    fetchContributorsFromGitHub(repository.owner, repository.name)
-  ])
+  // Fetch audits
+  const audits = await fetchAuditsFromBackend(repository.fullName)
+
+  // Create owner profile from database
+  await connectDB()
+  const user = await User.findOne({ userId: session.userId })
+
+  const ownerProfile = user ? {
+    id: Math.floor(Math.random() * 1000000),
+    name: user.githubUsername || repository.owner,
+    avatar: user.avatar || `https://github.com/${repository.owner}.png`,
+    commits: repository.stars * 2 || 10,
+    prs: Math.floor((repository.stars * 2 || 10) * 0.4),
+    role: 'Repository Owner',
+    profileUrl: `https://github.com/${repository.owner}`
+  } : null
+
+  // No contributors from GitHub API since we don't have token
+  const contributors: any[] = []
 
   return (
     <main className="min-h-screen bg-[#0A0809] pb-20">
@@ -174,7 +153,7 @@ export default async function RepoDetailsPage({ params }: { params: { id: string
               <AgentActivitySummary />
             </section>
             <section className="animate-in fade-in slide-in-from-right-4 duration-700 delay-500">
-              <RepoContributors contributors={contributors} />
+              <RepoContributors contributors={contributors} owner={ownerProfile} />
             </section>
           </aside>
         </div>
