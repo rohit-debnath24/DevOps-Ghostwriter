@@ -1,49 +1,71 @@
+"""
+Pull Request: Add user utilities and background processing
+
+Summary:
+This PR adds helper utilities, database access logic,
+and a background task for periodic processing.
+"""
+
 import os
 import time
 import sqlite3
 import pickle
-from pathlib import Path
-from dotenv import load_dotenv
 
-# Load environment variables from .env.local in the root directory
-env_path = Path(__file__).parent.parent.parent / ".env.local"
-load_dotenv(dotenv_path=env_path)
 
-API_KEY = os.getenv("API_KEY", "")
+# -----------------------------
+# Configuration
+# -----------------------------
 
-DB_PASSWORD = os.getenv("DB_PASSWORD", "admin123")
+# Hardcoded secret (security issue)
+API_TOKEN = "sk_test_1234567890abcdef"
 
-def get_user(user_id):
+
+# -----------------------------
+# Database Logic
+# -----------------------------
+
+def get_user_by_id(user_id):
+    """
+    Fetch a user from the database.
+    """
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
+
+    # SQL injection risk
     query = f"SELECT * FROM users WHERE id = {user_id}"
-    cursor.execute(query)  
-    return cursor.fetchall()
+    cursor.execute(query)
 
-def load_user(data):
-    return pickle.loads(data)
-
-def calculate(expr):
-    return eval(expr)
+    return cursor.fetchone()
 
 
-def fetch_data():
-    print(response)
+# -----------------------------
+# Utility Functions
+# -----------------------------
 
-def divide(a, b):
-    return a / b
+def deserialize_payload(data):
+    """
+    Deserialize incoming payload.
+    """
+    return pickle.loads(data)  # unsafe deserialization
+
+
+def calculate_ratio(a, b):
+    """
+    Calculate ratio between two numbers.
+    """
+    return a / b  # potential ZeroDivisionError
+
+
+def log_result():
+    """
+    Log the result of processing.
+    """
+    print(result)  # undefined variable (runtime issue)
+
+
+# -----------------------------
+# Background Task
+# -----------------------------
 
 while True:
-    time.sleep(1)
-
-
-
-def silent_fail():
-    try:
-        risky_operation()
-    except:
-        pass
-
-
-def risky_operation():
-    do_something()   
+    time.sleep(1)  # infinite loop (runtime issue)
