@@ -101,8 +101,9 @@ const RepositorySchema = new Schema<IRepository>(
     }
 )
 
-// Compound index for user + repo
+// Compound indexes
 RepositorySchema.index({ userId: 1, repoId: 1 }, { unique: true })
+RepositorySchema.index({ userId: 1, fullName: 1 }, { unique: true })
 
 const Repository: Model<IRepository> = mongoose.models.Repository || mongoose.model<IRepository>('Repository', RepositorySchema)
 
