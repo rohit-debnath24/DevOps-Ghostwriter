@@ -50,37 +50,58 @@ export async function saveRepositories(userId: string, repos: any[]): Promise<IR
     const savedRepos: IRepository[] = []
 
     for (const repo of repos) {
-        const healthScore = calculateHealthScore(repo)
-        const status = determineStatus(healthScore)
-        const findings = Math.floor((100 - healthScore) / 5)
+        try {
+            const healthScore = calculateHealthScore(repo)
+            const status = determineStatus(healthScore)
+            const findings = Math.floor((100 - healthScore) / 5)
+            const fullName = repo.fullName || `${repo.owner}/${repo.name}`
 
-        const repoData = {
-            userId,
-            repoId: repo.id,
-            name: repo.name,
-            fullName: repo.fullName || `${repo.owner}/${repo.name}`,
-            description: repo.description || '',
-            language: repo.language || 'Unknown',
-            topics: repo.topics || [],
-            url: repo.url,
-            stars: repo.stars || 0,
-            forks: repo.forks || 0,
-            owner: repo.owner,
-            isPrivate: repo.private || false,
-            defaultBranch: repo.default_branch || 'main',
-            healthScore,
-            findings,
-            status,
-            lastAnalyzed: new Date(),
+            const repoData = {
+                userId,
+                repoId: repo.id,
+                name: repo.name,
+                fullName,
+                description: repo.description || '',
+                language: repo.language || 'Unknown',
+                topics: repo.topics || [],
+                url: repo.url,
+                stars: repo.stars || 0,
+                forks: repo.forks || 0,
+                owner: repo.owner,
+                isPrivate: repo.private || false,
+                defaultBranch: repo.default_branch || 'main',
+                healthScore,
+                findings,
+                status,
+                lastAnalyzed: new Date(),
+            }
+
+            // Use both userId and fullName to prevent duplicates
+            const savedRepo = await Repository.findOneAndUpdate(
+                { userId, fullName },
+                { $set: repoData },
+                { upsert: true, new: true }
+            )
+
+            savedRepos.push(savedRepo)
+        } catch (error: any) {
+            // Handle duplicate key errors gracefully
+            if (error.code === 11000) {
+                console.warn(`Duplicate repository detected: ${repo.fullName}, skipping...`)
+                // Try to fetch the existing repo instead
+                const existingRepo = await Repository.findOne({
+                    userId,
+                    fullName: repo.fullName || `${repo.owner}/${repo.name}`
+                })
+                if (existingRepo) {
+                    savedRepos.push(existingRepo)
+                }
+            } else {
+                // Re-throw other errors
+                console.error(`Error saving repository ${repo.fullName}:`, error)
+                throw error
+            }
         }
-
-        const savedRepo = await Repository.findOneAndUpdate(
-            { userId, repoId: repo.id },
-            { $set: repoData },
-            { upsert: true, new: true }
-        )
-
-        savedRepos.push(savedRepo)
     }
 
     return savedRepos
