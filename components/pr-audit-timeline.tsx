@@ -16,6 +16,36 @@ import {
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+
+interface MarkdownRendererProps {
+  content: string
+}
+
+const MarkdownRenderer = ({ content }: MarkdownRendererProps) => {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        p: ({ node, ...props }) => <p className="text-xs text-white/70 leading-relaxed mb-2 last:mb-0" {...props} />,
+        ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-1 mb-2 text-xs text-white/70" {...props} />,
+        ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-1 mb-2 text-xs text-white/70" {...props} />,
+        li: ({ node, ...props }) => <li className="pl-1 marker:text-[#69E300]/50" {...props} />,
+        strong: ({ node, ...props }) => <strong className="font-bold text-white/90" {...props} />,
+        a: ({ node, ...props }) => <a className="text-[#69E300] hover:underline underline-offset-2" target="_blank" rel="noopener noreferrer" {...props} />,
+        code: ({ node, ...props }) => (
+          <code className="bg-black/40 border border-white/5 rounded px-1 py-0.5 font-mono text-[10px] text-[#69E300]" {...props} />
+        ),
+        h1: ({ node, ...props }) => <h3 className="text-sm font-bold text-white mb-2 mt-1" {...props} />,
+        h2: ({ node, ...props }) => <h4 className="text-xs font-bold text-white mb-1 mt-1" {...props} />,
+        h3: ({ node, ...props }) => <h5 className="text-xs font-bold text-white mb-1" {...props} />,
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  )
+}
 
 interface PRAuditTimelineProps {
   audits: any[]
@@ -50,9 +80,9 @@ export function PRAuditTimeline({ audits }: PRAuditTimelineProps) {
         if (obj.vulnerabilities !== undefined) {
           if (Array.isArray(obj.vulnerabilities) && obj.vulnerabilities.length > 0) {
             const highSev = obj.vulnerabilities.filter((v: any) => v.severity === 'HIGH' || v.severity === 'CRITICAL').length;
-            return `${obj.vulnerabilities.length} vulnerabilities detected. ${highSev > 0 ? `⚠️ ${highSev} HIGH severity.` : ''}\n\nTop: ${obj.vulnerabilities[0].description}`;
+            return `${obj.vulnerabilities.length} vulnerabilities detected. ${highSev > 0 ? `${highSev} HIGH severity.` : ''}\n\nTop: ${obj.vulnerabilities[0].description}`;
           }
-          return obj.is_secure ? "✅ No vulnerabilities detected." : "⚠️ Vulnerabilities found.";
+          return obj.is_secure ? "No vulnerabilities detected." : "Vulnerabilities found.";
         }
 
         // Runtime Parser
@@ -65,16 +95,16 @@ export function PRAuditTimeline({ audits }: PRAuditTimelineProps) {
           let output = `${passed}/${total} checks passed.`;
 
           if (failedSteps.length > 0) {
-            output += "\n\n❌ Failures detected:\n";
+            output += "\n\nFailures detected:\n";
             failedSteps.forEach((step: any) => {
               output += `- ${step.step_name}: ${step.actual_output}\n`;
             });
           } else {
-            output += "\n\n✅ Code execution verified safely.";
+            output += "\n\nCode execution verified safely.";
           }
 
           if (obj.execution_time) {
-            output += `\n⏱️ Execution: ${obj.execution_time}`;
+            output += `\nExecution: ${obj.execution_time}`;
           }
 
           return output;
@@ -83,9 +113,9 @@ export function PRAuditTimeline({ audits }: PRAuditTimelineProps) {
         // Documentation Parser
         if (obj.missing_docs !== undefined) {
           if (Array.isArray(obj.missing_docs) && obj.missing_docs.length > 0) {
-            return `❌ Missing docs for: ${obj.missing_docs.slice(0, 3).join(', ')}${obj.missing_docs.length > 3 ? '...' : ''}`;
+            return `Missing docs for: ${obj.missing_docs.slice(0, 3).join(', ')}${obj.missing_docs.length > 3 ? '...' : ''}`;
           }
-          return "✅ Documentation coverage is growing.";
+          return "Documentation coverage is growing.";
         }
 
         // Fallback to specific summary fields if they exist
@@ -211,21 +241,27 @@ export function PRAuditTimeline({ audits }: PRAuditTimelineProps) {
                       <Shield className="h-3 w-3 text-[#69E300]" />
                       Security Finding
                     </div>
-                    <p className="text-xs text-white/70 leading-relaxed whitespace-pre-wrap">{audit.security}</p>
+                    <p className="text-xs text-white/70 leading-relaxed">
+                      <MarkdownRenderer content={audit.security} />
+                    </p>
                   </div>
                   <div className="space-y-2 rounded-lg bg-black/20 p-3 border border-white/5">
                     <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40">
                       <Terminal className="h-3 w-3 text-[#69E300]" />
                       Runtime Validation
                     </div>
-                    <p className="text-xs text-white/70 leading-relaxed whitespace-pre-wrap">{audit.runtime}</p>
+                    <div className="text-xs text-white/70 leading-relaxed">
+                      <MarkdownRenderer content={audit.runtime} />
+                    </div>
                   </div>
                   <div className="space-y-2 rounded-lg bg-black/20 p-3 border border-white/5">
                     <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40">
                       <FileText className="h-3 w-3 text-[#69E300]" />
                       Documentation
                     </div>
-                    <p className="text-xs text-white/70 leading-relaxed whitespace-pre-wrap">{audit.docs}</p>
+                    <div className="text-xs text-white/70 leading-relaxed">
+                      <MarkdownRenderer content={audit.docs} />
+                    </div>
                   </div>
                 </div>
 
@@ -242,7 +278,9 @@ export function PRAuditTimeline({ audits }: PRAuditTimelineProps) {
                       View Full Trace →
                     </Link>
                   </div>
-                  <p className="text-sm italic text-white/80 leading-relaxed whitespace-pre-wrap">"{audit.ghostwriter}"</p>
+                  <div className="text-sm italic text-white/80 leading-relaxed">
+                    <MarkdownRenderer content={audit.ghostwriter} />
+                  </div>
                 </div>
               </div>
             )}
