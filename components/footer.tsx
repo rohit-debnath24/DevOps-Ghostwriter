@@ -98,8 +98,12 @@ export function Footer() {
                 type="email"
                 placeholder="email@example.com"
                 className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#69E300]/50 transition-colors"
+                suppressHydrationWarning
               />
-              <button className="bg-[#69E300] text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#5bc200] transition-colors">
+              <button
+                suppressHydrationWarning
+                className="bg-[#69E300] text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#5bc200] transition-colors"
+              >
                 <Mail className="h-4 w-4" />
               </button>
             </div>

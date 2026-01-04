@@ -1,8 +1,10 @@
 import { Terminal, Shield, FileText, CheckCircle2 } from "lucide-react"
+import { useEffect, useState } from "react"
 
-const ACTIVITIES = [
+// Initial static data as fallback
+const INITIAL_ACTIVITIES = [
   {
-    id: 1,
+    id: "1",
     agent: "SecurityAuditor",
     action: "identified vulnerability in next-auth session handling",
     repo: "ghostwriter-core",
@@ -10,51 +12,56 @@ const ACTIVITIES = [
     icon: Shield,
     type: "critical",
   },
-  {
-    id: 2,
-    agent: "DocWriter",
-    action: "generated technical specification for API v2",
-    repo: "adk-orchestrator",
-    time: "15m ago",
-    icon: FileText,
-    type: "info",
-  },
-  {
-    id: 3,
-    agent: "CodeReviewer",
-    action: "approved and merged PR #142 into main",
-    repo: "weave-exporter",
-    time: "42m ago",
-    icon: CheckCircle2,
-    type: "success",
-  },
-  {
-    id: 4,
-    agent: "SandboxRunner",
-    action: "successfully executed isolation test suite",
-    repo: "sandbox-runtime",
-    time: "1h ago",
-    icon: Terminal,
-    type: "success",
-  },
 ]
 
 export function ActivityFeed() {
+  const [activities, setActivities] = useState<any[]>(INITIAL_ACTIVITIES)
+
+  useEffect(() => {
+    const fetchAudits = async () => {
+      try {
+        const res = await fetch('/api/audits')
+        if (res.ok) {
+          const data = await res.json()
+          // Transform backend data to activity format
+          const newActivities = data.map((audit: any) => ({
+            id: audit.id,
+            agent: "Ghostwriter Agent", // or drive from result
+            action: `analyzed PR #${audit.pr_id}`,
+            repo: audit.repo,
+            time: new Date(audit.timestamp).toLocaleTimeString(),
+            icon: audit.result?.status === 'success' ? CheckCircle2 : Shield,
+            type: audit.result?.status === 'success' ? 'success' : 'critical'
+          }))
+          if (newActivities.length > 0) {
+            setActivities(newActivities)
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch activities", error)
+      }
+    }
+
+    // Poll every 5 seconds
+    fetchAudits()
+    const interval = setInterval(fetchAudits, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
-    <div className="space-y-4">
-      {ACTIVITIES.map((activity) => (
+    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+      {activities.map((activity) => (
         <div
           key={activity.id}
-          className="flex items-start gap-4 rounded-xl border border-white/5 bg-[#171717] p-4 transition-all hover:bg-[#1a1a1a]"
+          className="flex items-start gap-4 rounded-xl border border-white/5 bg-[#171717] p-4 transition-all hover:bg-[#1a1a1a] animate-in fade-in slide-in-from-left-4 duration-500"
         >
           <div
-            className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg border ${
-              activity.type === "critical"
+            className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg border ${activity.type === "critical"
                 ? "bg-red-500/10 border-red-500/20 text-red-500"
                 : activity.type === "success"
                   ? "bg-[#69E300]/10 border-[#69E300]/20 text-[#69E300]"
                   : "bg-blue-500/10 border-blue-500/20 text-blue-500"
-            }`}
+              }`}
           >
             <activity.icon className="h-4 w-4" />
           </div>

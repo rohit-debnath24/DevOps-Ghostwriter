@@ -130,6 +130,7 @@ const PulseButtonComponent = ({
       style={{
         boxShadow: isHovered ? variantStyle.shadow : "none",
       }}
+      suppressHydrationWarning
       {...props}
     >
       {rippleEffect.map((ripple) => (
