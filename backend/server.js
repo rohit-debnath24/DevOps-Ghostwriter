@@ -32,6 +32,38 @@ app.get('/api/audits', (req, res) => {
   res.json(list);
 });
 
+// API to fetch global stats (for Frontend "Global Telemetry")
+app.get('/api/stats', (req, res) => {
+  const audits = Object.values(AUDITS);
+  const totalAudits = audits.length;
+
+  // Calculate stats based on real data
+  const vulnerabilities = audits.reduce((acc, audit) => {
+    // Heuristic: if status is not success or if comment mentions 'vulnerability'
+    // For now, let's assume 'error' or specific keywords imply issues. 
+    // This is a basic mock logic on top of mock data structure.
+    if (audit.result?.status === 'error' || (audit.result?.comment && audit.result.comment.toLowerCase().includes('vulnerability'))) {
+      return acc + 1;
+    }
+    return acc;
+  }, 0);
+
+  // Calculate Success Rate
+  const successCount = audits.filter(a => a.result?.status === 'success' || a.result?.status === 'approved').length;
+  const successRate = totalAudits > 0 ? ((successCount / totalAudits) * 100).toFixed(1) : "100.0";
+
+  // Calculate Avg Review Time (Mocked for now as we don't track start/end time of agents precisely in this store yet)
+  // We can randomize slightly to make it look alive if static, or keep static.
+  const avgTime = "42s";
+
+  res.json({
+    audits_reviewed: totalAudits,
+    vulnerabilities_patched: vulnerabilities,
+    avg_review_time: avgTime,
+    agent_success_rate: successRate
+  });
+});
+
 // Initialize Octokit
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
