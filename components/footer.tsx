@@ -98,30 +98,19 @@ export function Footer() {
                 type="email"
                 placeholder="email@example.com"
                 className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#69E300]/50 transition-colors"
+                suppressHydrationWarning
               />
-              <button className="bg-[#69E300] text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#5bc200] transition-colors">
+              <button
+                suppressHydrationWarning
+                className="bg-[#69E300] text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#5bc200] transition-colors"
+              >
                 <Mail className="h-4 w-4" />
               </button>
             </div>
           </div>
         </div>
 
-        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[11px] text-white/20 uppercase tracking-[0.2em] font-mono">
-            © 2025 DevOps Ghostwriter Agentic Platform. All rights reserved.
-          </p>
-          <div className="flex gap-8 text-[11px] text-white/40 uppercase tracking-widest font-bold">
-            <Link href="#" className="hover:text-white transition-colors">
-              Status
-            </Link>
-            <Link href="#" className="hover:text-white transition-colors">
-              Contact
-            </Link>
-            <Link href="#" className="hover:text-white transition-colors">
-              Compliance
-            </Link>
-          </div>
-        </div>
+
       </div>
     </footer>
   )

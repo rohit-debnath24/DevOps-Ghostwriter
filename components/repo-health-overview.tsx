@@ -12,30 +12,91 @@ interface RepoHealthOverviewProps {
 export function RepoHealthOverview({ repository, audits }: RepoHealthOverviewProps) {
   // Calculate metrics from actual data
   const calculateMetrics = () => {
-    const securityHealth = repository.health || 70
+    const totalAudits = audits.length;
 
-    // Calculate stability from audits
-    const passedAudits = audits.filter(a => a.result?.status === 'success' || a.result?.status === 'passed').length
-    const totalAudits = audits.length || 1
-    const stability = Math.round((passedAudits / totalAudits) * 100)
+    // Security Metrics: Based on vulnerabilities found
+    // Base 100, deduct 20 for CRITICAL/HIGH, 10 for MEDIUM/Issues
+    const securityScore = audits.reduce((acc, audit) => {
+      let deduction = 0;
+      const status = audit.result?.status;
 
-    // Calculate docs coverage (estimate based on audits that mention documentation)
-    const auditsWithDocs = audits.filter(a =>
-      a.result?.comment?.toLowerCase().includes('doc') ||
-      a.result?.comment?.toLowerCase().includes('documentation')
-    ).length
-    const docsCoverage = Math.min(Math.round((auditsWithDocs / totalAudits) * 100), 100)
+      if (status === 'error' || status === 'failed') {
+        deduction = 20;
+      } else if (status === 'issues') {
+        deduction = 10;
+      }
 
-    // Calculate AI confidence (average from audits)
-    const avgConfidence = audits.length > 0
-      ? Math.round(audits.reduce((acc, a) => acc + ((a.result?.confidence_score || 0.5) * 100), 0) / audits.length)
-      : 85
+      // Try parsing detailed security data
+      const secData = audit.security_snapshot || audit.result?.security_analysis;
+      if (secData) {
+        try {
+          const secObj = typeof secData === 'string' ? JSON.parse(secData) : secData;
+          if (secObj.vulnerabilities?.length > 0) {
+            deduction = Math.min(secObj.vulnerabilities.length * 10, 50); // Cap deduction per PR
+          }
+        } catch (e) { }
+      }
+
+      return acc - deduction;
+    }, 100 * (totalAudits || 1));
+
+    // Normalize back to 0-100 scale
+    const finalSecurityHealth = totalAudits > 0 ? Math.max(0, Math.round(securityScore / totalAudits)) : 100;
+
+    // Stability: Runtime pass rate
+    // Parse runtime snapshot steps
+    const passedStepsCount = audits.reduce((acc, audit) => {
+      const runData = audit.runtime_snapshot || audit.result?.runtime_validation;
+      let passed = 0;
+      let total = 0;
+      if (runData) {
+        try {
+          const runObj = typeof runData === 'string' ? JSON.parse(runData) : runData;
+          const steps = runObj.steps || runObj.test_results;
+          if (steps && Array.isArray(steps)) {
+            passed = steps.filter((s: any) => s.status === 'PASS' || s.status === 'passed').length;
+            total = steps.length;
+          }
+        } catch (e) { }
+      }
+      // Fallback if no detailed steps but overall audit success
+      if (total === 0) {
+        return audit.result?.status === 'success' ? acc + 1 : acc;
+      }
+      return acc + (total > 0 ? (passed / total) : 0);
+    }, 0);
+
+    // If we count by steps, we average the % per PR. If fallback, we average binary success.
+    // Simplifying: average of (passed_steps/total_steps) per PR
+    const stability = totalAudits > 0 ? Math.round((passedStepsCount / totalAudits) * 100) : 100;
+
+    // Docs Coverage: simple heuristic if docs are present or not missing
+    const docsScore = audits.reduce((acc, audit) => {
+      const docData = audit.result?.documentation_status;
+      let isGood = 0;
+      if (audit.result?.comment?.toLowerCase().includes('doc')) isGood = 1;
+
+      if (docData) {
+        try {
+          const docObj = typeof docData === 'string' ? JSON.parse(docData) : docData;
+          if (docObj.missing_docs && docObj.missing_docs.length === 0) isGood = 1;
+          else if (docObj.missing_docs && docObj.missing_docs.length > 0) isGood = 0;
+        } catch (e) { }
+      }
+      return acc + isGood;
+    }, 0);
+    const docsCoverage = totalAudits > 0 ? Math.round((docsScore / totalAudits) * 100) : 100;
+
+    // AI Confidence
+    const avgConfidence = totalAudits > 0
+      ? Math.round(audits.reduce((acc, a) => acc + ((a.result?.confidence_score || 0.85) * 100), 0) / totalAudits)
+      : 95
 
     return {
-      securityHealth,
-      stability: isNaN(stability) ? 85 : stability,
-      docsCoverage: isNaN(docsCoverage) ? 75 : docsCoverage,
-      aiConfidence: isNaN(avgConfidence) ? 85 : avgConfidence
+      securityHealth: finalSecurityHealth,
+      stability: stability,
+      docsCoverage: docsCoverage,
+      aiConfidence: avgConfidence
     }
   }
 

@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 import { Clock, Database, FileText, Clipboard, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
+import { MarkdownRenderer } from "@/components/markdown-renderer"
 
 interface AuditDetailsProps {
   data: any
@@ -96,8 +97,8 @@ export function AuditDetails({ data }: AuditDetailsProps) {
                 <Clipboard className="h-4 w-4" />
               </button>
             </div>
-            <div className="rounded-lg bg-[#0A0809] border border-[#222122] p-4 font-mono text-[11px] text-[#A1A1A1] space-y-3 whitespace-pre-wrap h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
-              {ghostwriterComment}
+            <div className="rounded-lg bg-[#0A0809] border border-[#222122] p-4 text-[11px] text-[#A1A1A1] space-y-3 h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
+              <MarkdownRenderer content={ghostwriterComment} />
             </div>
             <button className="w-full mt-6 py-2 rounded-lg bg-[#202023] border border-[#262626] text-[11px] font-bold text-[#F8F7F8] hover:border-[#69E300] transition-colors">
               Preview README Diffs

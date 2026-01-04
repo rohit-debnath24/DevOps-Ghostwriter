@@ -160,7 +160,11 @@ export default function TestimonialCarousel() {
       const sessionRes = await fetch("/api/auth/session")
 
       if (!sessionRes.ok) {
-        console.error("Session check failed:", sessionRes.status)
+        if (sessionRes.status === 401) {
+          console.log("User not logged in (guest)")
+        } else {
+          console.error("Session check failed:", sessionRes.status)
+        }
         return
       }
 

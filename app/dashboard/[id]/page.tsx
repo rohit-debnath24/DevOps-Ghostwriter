@@ -3,9 +3,16 @@
 import { RepositoryGrid } from "@/components/repository-grid"
 import { GlobalStats } from "@/components/global-stats"
 import { ActivityFeed } from "@/components/activity-feed"
-import { Shield, Activity, Terminal, ChevronRight, Search, Bell, Settings, Github, Send, RotateCw } from "lucide-react"
+import { Shield, Activity, Terminal, ChevronRight, Search, Bell, Settings, Github, Send, RotateCw, Mail } from "lucide-react"
 import LaserFlow from "@/components/laser-flow"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -32,6 +39,7 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
   // PR Submission State
   const [prUrl, setPrUrl] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(false)
 
   const handleSubmitPR = async () => {
     if (!prUrl.trim()) {
@@ -52,7 +60,7 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
         },
         body: JSON.stringify({
           prUrl,
-          email: userEmail
+          email: emailNotificationsEnabled ? userEmail : null
         }),
       })
 
@@ -358,14 +366,43 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
               <Github className={`h-5 w-5 ${isLoadingRepos ? 'animate-spin' : ''}`} />
             </Button>
             <div className="h-10 w-px bg-white/10" />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-12 w-12 text-white/40 hover:text-[#69E300] transition-colors"
-              title="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`h-12 w-12 transition-colors ${emailNotificationsEnabled ? "text-[#69E300] bg-[#69E300]/10" : "text-white/40 hover:text-[#69E300]"}`}
+                  title="Notifications"
+                >
+                  <Bell className="h-5 w-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 bg-[#171717] border border-white/10 text-white p-4 backdrop-blur-xl">
+                <div className="space-y-4">
+                  <h4 className="font-bold text-sm text-[#69E300] uppercase tracking-widest flex items-center gap-2">
+                    <Bell className="h-4 w-4" />
+                    Notification Settings
+                  </h4>
+                  <div className="flex items-center space-x-4 rounded-lg border border-white/5 bg-white/5 p-4">
+                    <Mail className="h-5 w-5 text-white/50" />
+                    <div className="flex-1 space-y-1">
+                      <Label htmlFor="email-notifications" className="text-sm font-medium leading-none text-white">
+                        Email Reports
+                      </Label>
+                      <p className="text-xs text-white/50">
+                        Receive detailed audit reports via email.
+                      </p>
+                    </div>
+                    <Switch
+                      id="email-notifications"
+                      checked={emailNotificationsEnabled}
+                      onCheckedChange={setEmailNotificationsEnabled}
+                      className="data-[state=checked]:bg-[#69E300]"
+                    />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button
               variant="ghost"
               size="icon"

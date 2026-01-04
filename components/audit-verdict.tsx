@@ -23,7 +23,7 @@ export function AuditVerdict({ data }: AuditVerdictProps) {
               {isSecure ? <CheckCircle2 className="h-6 w-6 text-[#69E300]" /> : <AlertTriangle className="h-6 w-6 text-red-500" />}
             </div>
             <h2 className={`text-2xl font-bold ${isSecure ? 'text-[#F8F7F8]' : 'text-red-400'}`}>
-              {isSecure ? "✅ Analysis Passed | 🛡️ Secure" : "⚠️ Issues Detected | 🛡️ Review Needed"}
+              {isSecure ? "Analysis Passed | Secure" : "Issues Detected | Review Needed"}
             </h2>
           </div>
 

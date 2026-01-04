@@ -1,62 +1,57 @@
 "use client"
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts"
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
 interface SecurityTrendsProps {
   audits: any[]
 }
 
 export function SecurityTrends({ audits }: SecurityTrendsProps) {
-  // Group audits by day and calculate metrics
-  const calculateTrends = () => {
-    const today = new Date()
-    const last7Days = []
+  // Sort audits by timestamp ascending
+  const sortedAudits = [...audits].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
 
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today)
-      date.setDate(date.getDate() - i)
-      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
+  // Take last 10 audits for legible trend
+  const recentAudits = sortedAudits.slice(-10)
 
-      // Filter audits for this day
-      const dayAudits = audits.filter(audit => {
-        if (!audit.timestamp) return false
-        const auditDate = new Date(audit.timestamp)
-        return auditDate.toDateString() === date.toDateString()
-      })
-
-      // Calculate vulnerabilities (failed or error audits)
-      const vulnerabilities = dayAudits.filter(a =>
-        a.result?.status === 'error' || a.result?.status === 'failed'
-      ).length
-
-      // Calculate quality score (based on confidence and success rate)
-      const successfulAudits = dayAudits.filter(a => a.result?.status === 'success').length
-      const avgConfidence = dayAudits.length > 0
-        ? dayAudits.reduce((acc, a) => acc + ((a.result?.confidence_score || 0.5) * 100), 0) / dayAudits.length
-        : 85
-      const quality = dayAudits.length > 0
-        ? Math.round((successfulAudits / dayAudits.length) * avgConfidence)
-        : 85
-
-      last7Days.push({
-        name: dayName,
-        vulnerabilities,
-        quality: Math.min(quality, 100)
-      })
+  // Transform data for chart
+  const data = recentAudits.map(audit => {
+    let vulnCount = 0
+    if (audit.result?.status === 'error' || audit.result?.status === 'failed') {
+      vulnCount = 1 // Default to 1 if just status fail
+    }
+    // Try to parse detailed vuln count if available
+    const securityData = audit.security_snapshot || audit.result?.security_analysis
+    if (securityData) {
+      try {
+        const secObj = typeof securityData === 'string' ? JSON.parse(securityData) : securityData
+        if (secObj.vulnerabilities && Array.isArray(secObj.vulnerabilities)) {
+          vulnCount = secObj.vulnerabilities.length
+        } else if (secObj.vulnerabilities) {
+          // Maybe it's a number or something else
+          vulnCount = 1
+        }
+      } catch (e) { /* ignore */ }
     }
 
-    return last7Days
-  }
+    return {
+      name: `PR #${audit.pr_id}`,
+      quality: Math.round((audit.result?.confidence_score || 0.5) * 100),
+      vulnerabilities: vulnCount,
+      timestamp: new Date(audit.timestamp).toLocaleTimeString()
+    }
+  })
 
-  const data = calculateTrends()
-
-  // Calculate summary stats
-  const totalVulnerabilities = data.reduce((acc, d) => acc + d.vulnerabilities, 0)
-  const avgQuality = Math.round(data.reduce((acc, d) => acc + d.quality, 0) / data.length)
-  const vulnerabilityTrend = data[0].vulnerabilities > data[6].vulnerabilities ? '-' : '+'
-  const vulnerabilityChange = data[0].vulnerabilities !== 0
-    ? Math.round(((data[6].vulnerabilities - data[0].vulnerabilities) / data[0].vulnerabilities) * 100)
+  // Calculate summary stats based on ALL audits (not just chart)
+  const totalAudits = audits.length
+  const avgQuality = totalAudits > 0
+    ? Math.round(audits.reduce((acc, a) => acc + ((a.result?.confidence_score || 0.5) * 100), 0) / totalAudits)
     : 0
+
+  const totalVulns = audits.reduce((acc, audit) => {
+    // reuse logic roughly or simplify
+    if (audit.result?.status === 'error' || audit.result?.status === 'failed') return acc + 1
+    return acc
+  }, 0)
 
   // Calculate runtime errors (estimate from failed audits)
   const runtimeErrors = audits.filter(a =>
@@ -70,6 +65,17 @@ export function SecurityTrends({ audits }: SecurityTrendsProps) {
     a.result?.comment?.toLowerCase().includes('documentation')
   ).length
 
+  if (audits.length === 0) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-bold tracking-tight text-white">Security & Quality Trends</h2>
+        <div className="rounded-xl border border-white/5 bg-[#171717] p-6 flex items-center justify-center h-[200px]">
+          <p className="text-white/40 text-sm">No trend data available yet.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -77,11 +83,11 @@ export function SecurityTrends({ audits }: SecurityTrendsProps) {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-[#69E300]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Quality Score</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Confidence Score</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-white/20" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Vulnerabilities</span>
+            <div className="h-2 w-2 rounded-full bg-red-400" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Issues Found</span>
           </div>
         </div>
       </div>
@@ -89,47 +95,77 @@ export function SecurityTrends({ audits }: SecurityTrendsProps) {
       <div className="rounded-xl border border-white/5 bg-[#171717] p-6">
         <div className="h-[240px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
-              <XAxis dataKey="name" stroke="#71717A" fontSize={10} tickLine={false} axisLine={false} dy={10} />
-              <YAxis
-                stroke="#71717A"
+            <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorQuality" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#69E300" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#69E300" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="colorVuln" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f87171" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#f87171" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+              <XAxis
+                dataKey="name"
+                stroke="#52525b"
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `${value}`}
+                dy={10}
+              />
+              <YAxis
+                stroke="#52525b"
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
               />
               <Tooltip
-                cursor={{ fill: "rgba(255, 255, 255, 0.05)" }}
                 contentStyle={{
                   backgroundColor: "#171717",
                   border: "1px solid rgba(255, 255, 255, 0.1)",
                   borderRadius: "8px",
                   fontSize: "12px",
+                  color: "#fff"
                 }}
+                cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
               />
-              <Bar dataKey="quality" radius={[4, 4, 0, 0]}>
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill="#69E300" fillOpacity={0.8} />
-                ))}
-              </Bar>
-              <Bar dataKey="vulnerabilities" fill="rgba(255, 255, 255, 0.1)" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Area
+                type="monotone"
+                dataKey="quality"
+                stroke="#69E300"
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorQuality)"
+                name="Confidence"
+              />
+              <Area
+                type="monotone"
+                dataKey="vulnerabilities"
+                stroke="#f87171"
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorVuln)"
+                name="Issues"
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
         <div className="mt-6 grid grid-cols-3 gap-4 border-t border-white/5 pt-6 text-center">
           <div className="space-y-1">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Vulnerabilities</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Avg Confidence</div>
             <div className="text-xl font-black text-white">
-              {vulnerabilityTrend}{Math.abs(vulnerabilityChange)}%
+              {avgQuality}%
             </div>
           </div>
           <div className="space-y-1">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Runtime Errors</div>
-            <div className="text-xl font-black text-white">{runtimeErrors}</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Total Issues</div>
+            <div className="text-xl font-black text-white">{totalVulns}</div>
           </div>
           <div className="space-y-1">
             <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Docs Gen</div>
-            <div className="text-xl font-black text-white">+{docsGenerated}</div>
+            <div className="text-xl font-black text-white">{docsGenerated}</div>
           </div>
         </div>
       </div>

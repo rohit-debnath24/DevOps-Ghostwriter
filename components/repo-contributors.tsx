@@ -92,34 +92,12 @@ export function RepoContributors({ contributors, owner }: RepoContributorsProps)
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6">
-                                <div className="text-right">
-                                    <div className="text-lg font-black text-white">{contributor.commits}</div>
-                                    <div className="text-[9px] font-bold uppercase tracking-widest text-white/30">Commits</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-lg font-black text-[#69E300]">{contributor.prs}</div>
-                                    <div className="text-[9px] font-bold uppercase tracking-widest text-white/30">PRs</div>
-                                </div>
-                            </div>
+
                         </Link>
                     ))}
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-4 border-t border-white/5 pt-6">
-                    <div className="space-y-1 text-center">
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Total Commits</div>
-                        <div className="text-2xl font-black text-white">
-                            {allContributors.reduce((sum, c) => sum + c.commits, 0)}
-                        </div>
-                    </div>
-                    <div className="space-y-1 text-center">
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">Total PRs</div>
-                        <div className="text-2xl font-black text-[#69E300]">
-                            {allContributors.reduce((sum, c) => sum + c.prs, 0)}
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     )

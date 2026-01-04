@@ -3,6 +3,7 @@ import { FeaturesSection } from "@/components/features-section"
 import { CTASection } from "@/components/cta-section"
 import { HowItWorks } from "@/components/how-it-works"
 import { AgentsSection } from "@/components/agents-section"
+import { PricingSection } from "@/components/pricing-section"
 import TestimonialCarousel from "@/components/testimonial-carousel"
 
 export default function Home() {
@@ -23,6 +24,9 @@ export default function Home() {
             <div className="space-y-16">
               {/* Agents Section */}
               <AgentsSection />
+
+              {/* Pricing Section */}
+              <PricingSection />
 
               {/* Testimonial Carousel Section */}
               <TestimonialCarousel />

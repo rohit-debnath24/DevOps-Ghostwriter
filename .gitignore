@@ -3,6 +3,9 @@
 # dependencies
 /node_modules
 /Agents/venv
+/agent-engine/venv
+/agent-engine/__pycache__/
+Agents/__pycache__/
 # next.js
 /.next/
 /out/
