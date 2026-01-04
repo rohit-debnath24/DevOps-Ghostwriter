@@ -2,6 +2,7 @@
 
 import { Terminal, ChevronRight } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { MarkdownRenderer } from "@/components/markdown-renderer"
 
 interface AuditConsoleProps {
   data: any
@@ -9,7 +10,8 @@ interface AuditConsoleProps {
 
 export function AuditConsole({ data }: AuditConsoleProps) {
   // Use real data or fallback
-  const diffSnippet = data?.diff ? data.diff.substring(0, 500) + (data.diff.length > 500 ? "..." : "") : "No diff data available."
+  // Use real data or fallback
+  const diffSnippet = data?.diff || "No diff data available."
   const agentOutput = data?.result?.comment || "Waiting for agent output..."
   const status = data?.result?.status || "Unknown"
 
@@ -37,11 +39,11 @@ export function AuditConsole({ data }: AuditConsoleProps) {
           <div className="px-4 py-2 border-b border-[#333] bg-[#111]">
             <span className="text-xs text-white/50 font-bold uppercase tracking-wider">Input Context: Git Diff</span>
           </div>
-          <ScrollArea className="flex-1 p-4 bg-[#0F0F0F]">
+          <div className="flex-1 p-4 bg-[#0F0F0F] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
             <pre className="text-xs font-mono text-white/70 leading-relaxed whitespace-pre-wrap">
               {diffSnippet}
             </pre>
-          </ScrollArea>
+          </div>
         </div>
 
         {/* Right: Output (Reasoning) */}
@@ -50,7 +52,7 @@ export function AuditConsole({ data }: AuditConsoleProps) {
             <span className="text-xs text-white/50 font-bold uppercase tracking-wider">Agent Reasoning Output</span>
             <span className="text-xs text-[#69E300]">{status.toUpperCase()}</span>
           </div>
-          <ScrollArea className="flex-1 p-4">
+          <div className="flex-1 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
             <div className="space-y-2 font-mono text-sm">
               <div className="flex gap-2 text-white/40">
                 <ChevronRight className="h-4 w-4 shrink-0 mt-0.5" />
@@ -62,12 +64,12 @@ export function AuditConsole({ data }: AuditConsoleProps) {
               </div>
               <div className="mt-4 pt-4 border-t border-white/5">
                 <span className="text-[#69E300] font-bold block mb-2">{">"} FINAL FINDINGS:</span>
-                <div className="prose prose-invert prose-sm text-white/80 whitespace-pre-wrap max-w-none">
-                  {agentOutput}
+                <div className="prose prose-invert prose-sm text-white/80 max-w-none">
+                  <MarkdownRenderer content={agentOutput} />
                 </div>
               </div>
             </div>
-          </ScrollArea>
+          </div>
         </div>
       </div>
     </div>

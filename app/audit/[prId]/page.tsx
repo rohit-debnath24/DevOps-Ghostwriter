@@ -116,12 +116,7 @@ export default async function AuditCenterPage({ params }: { params: { prId: stri
         </section>
       </section>
 
-      {/* Footer Pattern */}
-      <footer className="mt-20 border-t border-white/5 py-12 text-center">
-        <div className="container mx-auto px-4">
-          <p className="text-white/20 text-sm">DevOps Ghostwriter • Verified by W&B</p>
-        </div>
-      </footer>
+
     </main>
   )
 }

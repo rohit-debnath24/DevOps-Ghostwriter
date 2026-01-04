@@ -110,22 +110,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[11px] text-white/20 uppercase tracking-[0.2em] font-mono">
-            © 2025 DevOps Ghostwriter Agentic Platform. All rights reserved.
-          </p>
-          <div className="flex gap-8 text-[11px] text-white/40 uppercase tracking-widest font-bold">
-            <Link href="#" className="hover:text-white transition-colors">
-              Status
-            </Link>
-            <Link href="#" className="hover:text-white transition-colors">
-              Contact
-            </Link>
-            <Link href="#" className="hover:text-white transition-colors">
-              Compliance
-            </Link>
-          </div>
-        </div>
+
       </div>
     </footer>
   )

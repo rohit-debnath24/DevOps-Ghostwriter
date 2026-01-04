@@ -150,7 +150,7 @@ export default async function RepoDetailsPage({ params }: { params: { id: string
           {/* Activity & Observability */}
           <aside className="space-y-12 lg:col-span-4">
             <section className="animate-in fade-in slide-in-from-right-4 duration-700 delay-400">
-              <AgentActivitySummary />
+              <AgentActivitySummary audits={audits} />
             </section>
             <section className="animate-in fade-in slide-in-from-right-4 duration-700 delay-500">
               <RepoContributors contributors={contributors} owner={ownerProfile} />
