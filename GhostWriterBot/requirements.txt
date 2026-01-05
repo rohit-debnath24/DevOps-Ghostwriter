@@ -1,0 +1,19 @@
+# FastAPI and server dependencies
+fastapi
+uvicorn[standard]
+
+# GitHub App authentication
+pyjwt
+cryptography
+
+# HTTP requests
+requests
+
+# Environment variables
+python-dotenv
+
+# Groq API for agents
+groq
+
+# Async support
+asyncio
