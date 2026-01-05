@@ -1,4 +1,4 @@
-import { Terminal, Shield, Zap, Code2, CheckCircle2 } from "lucide-react"
+import { Terminal, Shield, Zap, Code2, CheckCircle2, Workflow } from "lucide-react"
 
 const steps = [
   {
@@ -27,9 +27,10 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="space-y-12">
+    <section className="space-y-12 py-24">
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 rounded-full border border-[#69E300]/20 bg-[#69E300]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#69E300]">
+          <Workflow className="h-4 w-4" />
           Workflow
         </div>
         <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">How <span className="text-[#69E300]">it Works</span></h2>
@@ -42,7 +43,7 @@ export function HowItWorks() {
         {steps.map((step, index) => (
           <div
             key={index}
-            className="relative group p-8 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/[0.08] transition-all"
+            className="relative group p-8 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/[0.08] hover:shadow-[0_0_40px_rgba(105,227,0,0.5)] transition-all"
           >
             <div className="absolute -top-4 -left-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#0a0809] border border-white/10 text-white/20 text-xs font-bold font-mono">
               0{index + 1}

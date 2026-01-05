@@ -4,6 +4,7 @@ import { CTASection } from "@/components/cta-section"
 import { HowItWorks } from "@/components/how-it-works"
 import { AgentsSection } from "@/components/agents-section"
 import { PricingSection } from "@/components/pricing-section"
+import { FAQSection } from "@/components/faq-section"
 import TestimonialCarousel from "@/components/testimonial-carousel"
 
 export default function Home() {
@@ -12,25 +13,25 @@ export default function Home() {
       <main className="pt-16">
         <HeroSection />
 
-        <section className="container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 py-20 max-w-[1400px]">
-          <div className="space-y-32">
+        <section className="container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 max-w-[1400px]">
+          <div>
             {/* How It Works Section */}
             <HowItWorks />
 
             {/* Key Features Section */}
             <FeaturesSection />
 
-            {/* Agents and Testimonials Section with reduced spacing */}
-            <div className="space-y-16">
-              {/* Agents Section */}
-              <AgentsSection />
+            {/* Agents Section */}
+            <AgentsSection />
 
-              {/* Pricing Section */}
-              <PricingSection />
+            {/* Pricing Section */}
+            <PricingSection />
 
-              {/* Testimonial Carousel Section */}
-              <TestimonialCarousel />
-            </div>
+            {/* FAQ Section */}
+            <FAQSection />
+
+            {/* Testimonial Carousel Section */}
+            <TestimonialCarousel />
           </div>
 
           {/* CTA Section */}
@@ -39,6 +40,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-    </div>
+    </div >
   )
 }

@@ -1,4 +1,4 @@
-import { Shield, Zap, Terminal, Database, Lock, Search, ArrowRight } from "lucide-react"
+import { Shield, Zap, Terminal, Database, Lock, Search, Sparkles } from "lucide-react"
 
 const features = [
   {
@@ -47,9 +47,10 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 py-24">
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 rounded-full border border-[#69E300]/20 bg-[#69E300]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#69E300]">
+          <Sparkles className="h-4 w-4" />
           Core Features
         </div>
         <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Scale your <span className="text-[#69E300]">DevOps with AI</span></h2>
@@ -62,19 +63,16 @@ export function FeaturesSection() {
         {features.map((feature, index) => (
           <div
             key={index}
-            className="group relative rounded-2xl border border-white/5 bg-[#171717] p-8 transition-all hover:border-[#69E300]/20 hover:bg-[#1a1a1a]"
+            className="group relative rounded-2xl border border-white/5 bg-[#171717] p-6 transition-all hover:shadow-[0_0_40px_rgba(105,227,0,0.5)] hover:bg-[#1a1a1a]"
           >
             <div className={`mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl ${feature.accent}`}>
               <feature.icon className="h-6 w-6" />
             </div>
             <h3 className="mb-3 text-xl font-bold text-white">{feature.title}</h3>
             <p className="text-sm leading-relaxed text-white/40">{feature.description}</p>
-            <div className="mt-6 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#69E300] opacity-0 transition-opacity group-hover:opacity-100">
-              Explore Feature <ArrowRight className="h-3 w-3" />
-            </div>
           </div>
         ))}
       </div>
-    </div>
+    </div >
   )
 }

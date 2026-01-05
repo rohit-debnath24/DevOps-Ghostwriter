@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Network, Shield, Cpu, FileText, Eye, ArrowRight, Activity } from "lucide-react"
+import { Network, Shield, Cpu, FileText, Eye, ArrowRight, Activity, Bot } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface Agent {
@@ -77,10 +77,11 @@ export function AgentsSection() {
     const [hoveredAgent, setHoveredAgent] = useState<string | null>(null)
 
     return (
-        <section id="agents" className="space-y-12">
+        <section id="agents" className="space-y-12 py-24">
             {/* Section Header */}
             <div className="text-center space-y-4 max-w-2xl mx-auto">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#69E300]/20 bg-[#69E300]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#69E300]">
+                    <Bot className="h-4 w-4" />
                     Agent System
                 </div>
                 <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
@@ -136,7 +137,7 @@ export function AgentsSection() {
                             key={agent.id}
                             onMouseEnter={() => setHoveredAgent(agent.id)}
                             onMouseLeave={() => setHoveredAgent(null)}
-                            className="group relative bg-[#171717] border border-white/5 rounded-2xl p-6 hover:border-[#69E300]/30 transition-all duration-300 hover:-translate-y-1"
+                            className="group relative bg-[#171717] border border-white/5 rounded-2xl p-6 hover:shadow-[0_0_40px_rgba(105,227,0,0.5)] transition-all duration-300 hover:-translate-y-1"
                         >
                             {/* Status Indicator */}
                             <div className="absolute top-4 right-4 flex items-center gap-2">
