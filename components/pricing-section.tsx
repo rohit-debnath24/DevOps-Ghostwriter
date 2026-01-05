@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Check } from "lucide-react"
+import { Check, Tag } from "lucide-react"
 
 export function PricingSection() {
     const pricingPlans = [
@@ -74,10 +74,11 @@ export function PricingSection() {
                         viewport={{ once: true }}
                         className="inline-flex items-center gap-2 rounded-full border border-[#69E300]/20 bg-[#69E300]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#69E300] mb-6"
                     >
+                        <Tag className="h-4 w-4" />
                         Pricing Plans
                     </motion.div>
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#69E300] via-white to-[#69E300]">
-                        Simple & Transparent Plans
+                    <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+                        Simple & <span className="text-[#69E300]">Transparent Plans</span>
                     </h2>
                     <p className="text-lg text-white/60 max-w-2xl mx-auto">
                         Choose the plan that fits your security needs — from startups exploring predictive defense to enterprises requiring full-scale threat orchestration.
@@ -94,7 +95,7 @@ export function PricingSection() {
                             transition={{ duration: 0.6, delay: index * 0.1 }}
                             className={`relative group rounded-3xl p-8 flex flex-col backdrop-blur-sm transition-all duration-300 ${plan.highlighted
                                 ? "bg-gradient-to-br from-[#69E300]/20 to-[#69E300]/5 border-2 border-[#69E300]/50 shadow-lg shadow-[#69E300]/20 scale-105"
-                                : "bg-white/[0.02] border border-white/10 hover:border-[#69E300]/30 hover:bg-white/[0.05]"
+                                : "bg-white/[0.02] border border-white/10 hover:border-4 hover:border-dotted hover:border-[#69E300] hover:bg-white/[0.05]"
                                 }`}
                         >
                             {plan.highlighted && (
