@@ -95,7 +95,7 @@ export default async function AuditCenterPage({ params }: { params: { prId: stri
         <section className="space-y-6">
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-[#69E300] animate-pulse" />
-            <h3 className="text-sm font-bold text-[#F8F7F8] uppercase tracking-[0.2em]">Real-time Agent Reasoning</h3>
+            <h3 className="text-sm font-bold text-[#F8F7F8] uppercase tracking-[0.2em]">Analysis Context</h3>
           </div>
           {/* @ts-ignore */}
           <AuditConsole data={auditData} />
