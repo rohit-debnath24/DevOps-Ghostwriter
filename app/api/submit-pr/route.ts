@@ -1,9 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { exec } from "child_process"
-import path from "path"
-import { promisify } from "util"
-
-const execAsync = promisify(exec)
 
 export async function POST(request: NextRequest) {
     try {
@@ -11,61 +6,91 @@ export async function POST(request: NextRequest) {
         const { prUrl, email } = body
 
         if (!prUrl) {
-            return NextResponse.json({
-                error: 'PR URL is required'
-            }, { status: 400 })
+            return NextResponse.json({ error: 'PR URL is required' }, { status: 400 })
         }
 
-        // Validate URL format basic check
-        if (!prUrl.includes('github.com') || !prUrl.includes('/pull/')) {
-            return NextResponse.json({
-                error: 'Invalid GitHub PR URL provided'
-            }, { status: 400 })
+        // 1. Parse URL to get owner, repo, number
+        const match = prUrl.match(/github\.com\/([^\/]+)\/([^\/]+)\/pull\/(\d+)/)
+        if (!match) {
+            return NextResponse.json({ error: 'Invalid GitHub PR URL format' }, { status: 400 })
         }
 
-        console.log(`[API] Triggering python script for PR: ${prUrl}`)
+        const [, owner, repo, number] = match
+        const prNumber = parseInt(number)
 
-        // Path to the python script
-        const scriptPath = path.resolve(process.cwd(), 'fetch_real_pr.py')
-
-        // Construct command with optional email
-        let command = `python "${scriptPath}" "${prUrl}"`
-        if (email) {
-            command += ` --email "${email}"`
+        // 2. Fetch PR Metadata from GitHub
+        // We use the public GitHub API (rate limited if no token, but sufficient for low volume)
+        // Or usage process.env.GITHUB_TOKEN if you have it in Vercel env
+        const ghHeaders: HeadersInit = {
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "DevOps-Ghostwriter-App"
         }
 
-        console.log(`[API] Executing command: ${command}`)
-
-        try {
-            const { stdout, stderr } = await execAsync(command)
-
-            console.log('[Python Script Output]:', stdout)
-
-            // Warnings might appear in stderr, but execution might be successful
-            if (stderr) {
-                console.warn('[Python Script Stderr]:', stderr)
-            }
-
-            return NextResponse.json({
-                success: true,
-                message: 'PR analysis triggered successfully',
-                output: stdout,
-                debug_stderr: stderr
-            })
-        } catch (execError: any) {
-            console.error('[API] Exec execution failed:', execError)
-            console.error('[API] Stderr:', execError.stderr)
-            console.error('[API] Stdout:', execError.stdout)
-
-            return NextResponse.json({
-                error: 'Failed to execute analysis script',
-                details: execError.message,
-                stderr: execError.stderr,
-                stdout: execError.stdout,
-                command: command,
-                path_env: process.env.PATH // Debug info
-            }, { status: 500 })
+        // If you added GITHUB_TOKEN to Next.js env, use it validly
+        if (process.env.GITHUB_TOKEN) {
+            ghHeaders["Authorization"] = `token ${process.env.GITHUB_TOKEN}`
         }
+
+        const ghRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`, {
+            headers: ghHeaders
+        })
+
+        if (!ghRes.ok) {
+            return NextResponse.json({
+                error: `Failed to fetch PR from GitHub (${ghRes.status})`
+            }, { status: ghRes.status })
+        }
+
+        const prData = await ghRes.json()
+
+        // 3. Construct Payload for Backend
+        const payload = {
+            action: "opened",
+            pull_request: {
+                number: prNumber,
+                title: prData.title || `PR #${prNumber}`,
+                body: prData.body || "No description provided",
+                html_url: prData.html_url || prUrl,
+                diff_url: prData.diff_url || ""
+            },
+            repository: {
+                name: repo,
+                owner: { login: owner },
+                full_name: `${owner}/${repo}`
+            },
+            email: email || null // Use provided email or let backend rely on payload defaults
+        }
+
+        // 4. Forward to Node.js Backend
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+        const targetUrl = `${backendUrl}/api/webhook/github`
+
+        console.log(`[API] Forwarding to Backend: ${targetUrl}`)
+
+        const backendRes = await fetch(targetUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-GitHub-Event': 'pull_request'
+            },
+            body: JSON.stringify(payload)
+        })
+
+        if (!backendRes.ok) {
+            const txt = await backendRes.text()
+            return NextResponse.json({
+                error: 'Backend rejected the analysis request',
+                details: txt
+            }, { status: backendRes.status })
+        }
+
+        const backendData = await backendRes.json()
+
+        return NextResponse.json({
+            success: true,
+            message: 'PR analysis triggered successfully',
+            backend_response: backendData
+        })
 
     } catch (error: any) {
         console.error('Error submitting PR:', error)
