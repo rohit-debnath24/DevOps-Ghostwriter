@@ -102,76 +102,123 @@ app.post('/api/webhook/github', async (req, res) => {
 
     console.log(`Processing PR #${pull_number} for ${owner}/${repo}`);
 
-    // Step 2: Fetch or Mock Diff
-    let diffText = "";
-    // If diff is passed in payload (from local script), use it
-    if (payload.diff) {
-      diffText = payload.diff;
-      console.log(`Using provided diff from local script (length: ${diffText.length})`);
-    } else {
-      // Fallback to fetch from GitHub (existing logic)
-      try {
-        const { data } = await requestOctokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
-          owner,
-          repo,
-          pull_number,
-          mediaType: {
-            format: "diff"
-          }
-        });
-        diffText = data;
-      } catch (octokitError) {
-        console.error('Error fetching diff from GitHub:', octokitError.message);
-        if (!process.env.GITHUB_TOKEN) {
-          console.error('Hint: GITHUB_TOKEN is not set in the backend environment.');
-        }
-        // Return actual error message for debugging
-        return res.status(500).send(`Failed to fetch diff: ${octokitError.message}`);
-      }
-    }
+    // Call the shared analysis logic
+    const result = await runAnalysis(owner, repo, pull_number, payload.diff, email, requestOctokit, pull_request);
 
-    // Step 3: Forward to Python Service
-    const analysisPayload = {
-      repo_id: repository.full_name,
-      pr_id: pull_number,
-      diff_text: diffText,
-      title: pull_request.title,
-      description: pull_request.body
-    };
+    res.status(200).json(result);
 
-    let emailLog = "Skipped (Conditions not met)";
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).send('Server Error');
+  }
+});
 
+// New Endpoint: List Open PRs
+app.get('/api/github/repos/:owner/:repo/pulls', async (req, res) => {
+  const { owner, repo } = req.params;
+  try {
+    const { data } = await octokit.request('GET /repos/{owner}/{repo}/pulls', {
+      owner,
+      repo,
+      state: 'open'
+    });
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching PRs:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// New Endpoint: Manually Analyze PR
+app.post('/api/analyze-pr', async (req, res) => {
+  const { owner, repo, pull_number } = req.body;
+
+  try {
+    // Fetch PR details to get title/body if needed, or pass them if provided
+    // For now we'll fetch them inside runAnalysis if we don't have them, 
+    // but runAnalysis expects pull_request object for title/body.
+    // Let's first fetch the PR object from GitHub.
+
+    const { data: pull_request } = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
+      owner,
+      repo,
+      pull_number
+    });
+
+    const result = await runAnalysis(owner, repo, pull_number, null, null, octokit, pull_request);
+    res.json(result);
+
+  } catch (error) {
+    console.error('Manual analysis error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Shared Analysis Logic
+async function runAnalysis(owner, repo, pull_number, providedDiff, email, requestOctokit, pull_request) {
+  // Step 2: Fetch or Mock Diff
+  let diffText = "";
+  if (providedDiff) {
+    diffText = providedDiff;
+    console.log(`Using provided diff from local script (length: ${diffText.length})`);
+  } else {
     try {
-      const agentResponse = await axios.post(PYTHON_AGENT_URL, analysisPayload);
-      console.log('Successfully forwarded to Python Agent Engine');
+      const { data } = await requestOctokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
+        owner,
+        repo,
+        pull_number,
+        mediaType: {
+          format: "diff"
+        }
+      });
+      diffText = data;
+    } catch (octokitError) {
+      console.error('Error fetching diff from GitHub:', octokitError.message);
+      throw new Error(`Failed to fetch diff: ${octokitError.message}`);
+    }
+  }
 
-      const result = agentResponse.data;
+  // Step 3: Forward to Python Service
+  const analysisPayload = {
+    repo_id: `${owner}/${repo}`,
+    pr_id: pull_number,
+    diff_text: diffText,
+    title: pull_request.title,
+    description: pull_request.body
+  };
 
-      // Store result in memory
-      const auditKey = `${owner}/${repo}/${pull_number}`;
-      AUDITS[auditKey] = {
-        id: auditKey,
-        repo: `${owner}/${repo}`,
-        pr_id: pull_number,
-        timestamp: new Date().toISOString(),
-        result: result, // { status: 'success', comment: '...' }
-        runtime_snapshot: result.runtime_snapshot,
-        security_snapshot: result.security_snapshot,
-        diff: diffText
-      };
-      console.log(`Stored audit for ${auditKey}`);
+  let emailLog = "Skipped (Conditions not met)";
 
-      // Step 4: Send Email Report
+  try {
+    const agentResponse = await axios.post(PYTHON_AGENT_URL, analysisPayload);
+    console.log('Successfully forwarded to Python Agent Engine');
 
-      if (email && process.env.EMAIL_USER) {
-        console.log(`Sending email report to: ${email}`);
-        const mailOptions = {
-          from: process.env.EMAIL_USER,
-          to: email,
-          subject: `[DevOps Ghostwriter] Audit Report for PR #${pull_number} - ${repo}`,
-          html: `
+    const result = agentResponse.data;
+
+    // Store result in memory
+    const auditKey = `${owner}/${repo}/${pull_number}`;
+    AUDITS[auditKey] = {
+      id: auditKey,
+      repo: `${owner}/${repo}`,
+      pr_id: pull_number,
+      timestamp: new Date().toISOString(),
+      result: result,
+      runtime_snapshot: result.runtime_snapshot,
+      security_snapshot: result.security_snapshot,
+      diff: diffText
+    };
+    console.log(`Stored audit for ${auditKey}`);
+
+    // Step 4: Send Email Report
+    if (email && process.env.EMAIL_USER) {
+      console.log(`Sending email report to: ${email}`);
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: `[DevOps Ghostwriter] Audit Report for PR #${pull_number} - ${repo}`,
+        html: `
                 <h2>Audit Report for Pull Request #${pull_number}</h2>
-                <p><strong>Repository:</strong> ${repository.full_name}</p>
+                <p><strong>Repository:</strong> ${owner}/${repo}</p>
                 <p><strong>Confidence Score:</strong> ${Math.round(result.confidence_score * 100)}%</p>
                 
                 <h3>Verdict</h3>
@@ -182,56 +229,48 @@ app.post('/api/webhook/github', async (req, res) => {
                 
                 <p><a href="http://localhost:3000/audit/${encodeURIComponent(auditKey)}">View Full Dashboard</a></p>
             `
-        };
-
-        try {
-          const info = await transporter.sendMail(mailOptions);
-          emailLog = `Sent successfully: ${info.response}`;
-          console.log('Email sent: ' + info.response);
-        } catch (mailError) {
-          emailLog = `Failed: ${mailError.message}`;
-          console.error('Error sending email:', mailError);
-        }
-      } else {
-        if (!email) emailLog = "Skipped: No email provided in payload.";
-        if (!process.env.EMAIL_USER) emailLog = "Skipped: EMAIL_USER env var not set on server.";
-        console.log(emailLog);
-      }
-
-    } catch (agentError) {
-      console.error('Failed to contact Python Agent Engine:', agentError.message);
-
-      // Store a partial audit with error status
-      const auditKey = `${owner}/${repo}/${pull_number}`;
-      AUDITS[auditKey] = {
-        id: auditKey,
-        repo: `${owner}/${repo}`,
-        pr_id: pull_number,
-        timestamp: new Date().toISOString(),
-        result: {
-          status: 'error',
-          comment: `Failed to analyze PR: Python Agent Engine is not available. Please ensure the service is running on ${PYTHON_AGENT_URL}`,
-          confidence_score: 0,
-          error: agentError.message
-        },
-        runtime_snapshot: null,
-        security_snapshot: null,
-        diff: diffText
       };
-      console.log(`Stored error audit for ${auditKey}`);
-      emailLog = "Skipped: Analysis failed.";
+
+      try {
+        await transporter.sendMail(mailOptions);
+        emailLog = `Sent successfully`;
+      } catch (mailError) {
+        emailLog = `Failed: ${mailError.message}`;
+      }
     }
 
-    res.status(200).json({
+    return {
       message: 'Processed',
-      email_status: emailLog || "Unknown"
-    });
+      email_status: emailLog,
+      audit: AUDITS[auditKey]
+    };
 
-  } catch (error) {
-    console.error('Webhook error:', error);
-    res.status(500).send('Server Error');
+  } catch (agentError) {
+    console.error('Failed to contact Python Agent Engine:', agentError.message);
+
+    // Store a partial audit with error status
+    const auditKey = `${owner}/${repo}/${pull_number}`;
+    AUDITS[auditKey] = {
+      id: auditKey,
+      repo: `${owner}/${repo}`,
+      pr_id: pull_number,
+      timestamp: new Date().toISOString(),
+      result: {
+        status: 'error',
+        comment: `Failed to analyze PR: Python Agent Engine is not available.`,
+        confidence_score: 0,
+        error: agentError.message
+      },
+      runtime_snapshot: null,
+      security_snapshot: null,
+      diff: diffText
+    };
+    return {
+      message: 'Analysis Failed',
+      error: agentError.message
+    };
   }
-});
+}
 
 app.listen(PORT, () => {
   console.log(`Node.js Backend (Fetcher) running on port ${PORT}`);
