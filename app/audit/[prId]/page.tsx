@@ -9,7 +9,8 @@ import { AuditObservability } from "@/components/audit-observability"
 async function getAuditData(prId: string) {
   try {
     // Fetch from Node.js backend
-    const res = await fetch('http://localhost:3001/api/audits', { cache: 'no-store' })
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+    const res = await fetch(`${backendUrl}/api/audits`, { cache: 'no-store' })
     if (!res.ok) {
       throw new Error('Failed to fetch audits')
     }
