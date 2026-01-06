@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
                 owner: { login: owner },
                 full_name: `${owner}/${repo}`
             },
-            email: email || null // Use provided email or let backend rely on payload defaults
+            email: email || null, // Use provided email or let backend rely on payload defaults
+            github_token: request.cookies.get('github_token')?.value || null
         }
 
         // 4. Forward to Node.js Backend
