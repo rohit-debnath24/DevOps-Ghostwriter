@@ -70,12 +70,21 @@ export function Navigation() {
           >
             Dashboard
           </Link>
-          <Link
-            href="/product"
+          <a
+            href="/#features"
             className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors"
+            onClick={(e) => {
+              e.preventDefault()
+              const element = document.getElementById('features')
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' })
+              } else {
+                window.location.href = '/#features'
+              }
+            }}
           >
             Product
-          </Link>
+          </a>
           <a
             href="/#agents"
             className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors"
@@ -98,9 +107,21 @@ export function Navigation() {
           >
             Observability
           </Link>
-          <Link href="/security" className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors">
+          <a
+            href="/#features"
+            className="text-sm font-medium text-white/60 hover:text-[#69E300] transition-colors"
+            onClick={(e) => {
+              e.preventDefault()
+              const element = document.getElementById('features')
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' })
+              } else {
+                window.location.href = '/#features'
+              }
+            }}
+          >
             Security
-          </Link>
+          </a>
         </div>
 
         <div className="flex items-center gap-4">

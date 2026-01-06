@@ -66,7 +66,7 @@ app.get('/api/stats', (req, res) => {
 
 // Initialize Octokit
 const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
+  auth: process.env.GITHUB_TOKEN || undefined,
 });
 
 app.post('/api/webhook/github', async (req, res) => {
@@ -79,11 +79,17 @@ app.post('/api/webhook/github', async (req, res) => {
       return res.status(200).send('Ignored event type');
     }
 
-    const { action, pull_request, repository, email } = payload;
+    const { action, pull_request, repository, email, github_token } = payload;
 
     if (!pull_request || !repository) {
       return res.status(400).send('Invalid payload');
     }
+
+    // Initialize Octokit for this request, preferring user token
+    // This allows accessing private repos if the user is authorized
+    const requestOctokit = new Octokit({
+      auth: github_token || process.env.GITHUB_TOKEN || undefined
+    });
 
     // Only process opened or synchronized (updated) PRs
     if (action !== 'opened' && action !== 'synchronize') {
@@ -105,7 +111,7 @@ app.post('/api/webhook/github', async (req, res) => {
     } else {
       // Fallback to fetch from GitHub (existing logic)
       try {
-        const { data } = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
+        const { data } = await requestOctokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
           owner,
           repo,
           pull_number,
@@ -116,9 +122,11 @@ app.post('/api/webhook/github', async (req, res) => {
         diffText = data;
       } catch (octokitError) {
         console.error('Error fetching diff from GitHub:', octokitError.message);
-        // Don't fail entire request, try to proceed if possible or return error
-        // Here we return error as diff is critical
-        return res.status(500).send('Failed to fetch diff');
+        if (!process.env.GITHUB_TOKEN) {
+          console.error('Hint: GITHUB_TOKEN is not set in the backend environment.');
+        }
+        // Return actual error message for debugging
+        return res.status(500).send(`Failed to fetch diff: ${octokitError.message}`);
       }
     }
 
