@@ -13,7 +13,11 @@ const PYTHON_AGENT_URL = process.env.PYTHON_AGENT_URL || 'http://localhost:8000/
 const AUDITS = {};
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins for now to prevent CORS issues
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Configure Email Transporter
 const transporter = nodemailer.createTransport({

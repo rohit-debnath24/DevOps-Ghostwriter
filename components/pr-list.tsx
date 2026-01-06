@@ -31,10 +31,15 @@ export function PRList({ owner, repo }: PRListProps) {
         fetchPRs()
     }, [owner, repo])
 
+    const getBackendUrl = () => {
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+        return url.replace(/\/$/, '')
+    }
+
     const fetchPRs = async () => {
         try {
             setLoading(true)
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/api/github/repos/${owner}/${repo}/pulls`)
+            const response = await fetch(`${getBackendUrl()}/api/github/repos/${owner}/${repo}/pulls`)
             if (!response.ok) {
                 throw new Error('Failed to fetch PRs')
             }
@@ -50,7 +55,7 @@ export function PRList({ owner, repo }: PRListProps) {
     const handleAnalyze = async (prNumber: number) => {
         try {
             setAnalyzingId(prNumber)
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/api/analyze-pr`, {
+            const response = await fetch(`${getBackendUrl()}/api/analyze-pr`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
