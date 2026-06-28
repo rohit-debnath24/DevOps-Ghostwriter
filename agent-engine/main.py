@@ -400,6 +400,4 @@ def cache_clear():
 if __name__ == "__main__":
     import uvicorn
 
-    # Use PORT from environment variable (Render sets this automatically to 10000)
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
