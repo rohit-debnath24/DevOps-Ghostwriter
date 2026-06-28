@@ -284,6 +284,55 @@ async def github_webhook(
 
 
 # --------------------------------------------------
+# Manual Analysis Endpoint (Frontend Dashboard)
+# --------------------------------------------------
+@app.post("/analyze")
+async def analyze_pr_manual(request: Request):
+    """
+    Manual analysis endpoint for the frontend dashboard.
+    Receives direct diff and metadata, returns the markdown comment.
+    """
+    try:
+        data = await request.json()
+        
+        pr_diff = data.get("diff_text", "")
+        repo_id = data.get("repo_id", "owner/repo")
+        pr_number = data.get("pr_id", 0)
+        title = data.get("title", "Manual PR")
+        
+        # Build minimal metadata
+        pr_metadata = {
+            "title": title,
+            "additions": len([line for line in pr_diff.split('\\n') if line.startswith('+') and not line.startswith('+++')]),
+            "deletions": len([line for line in pr_diff.split('\\n') if line.startswith('-') and not line.startswith('---')]),
+            "files_changed": pr_diff.count('diff --git')
+        }
+        
+        orchestrator = await create_orchestrator()
+        
+        # Run agents and wait for result to return to Node.js backend
+        security_report = await orchestrator.run_security_auditor(pr_diff, pr_number)
+        runtime_report = await orchestrator.run_runtime_validator(pr_diff, pr_number)
+        final_comment = await orchestrator.run_ghostwriter(
+            security_report=security_report,
+            runtime_report=runtime_report,
+            pr_metadata=pr_metadata,
+            pr_number=pr_number
+        )
+        
+        return {
+            "status": "success",
+            "comment": final_comment,
+            "runtime_snapshot": runtime_report,
+            "security_snapshot": security_report
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --------------------------------------------------
 # Health Check Endpoint
 # --------------------------------------------------
 @app.get("/health")
