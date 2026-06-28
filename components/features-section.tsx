@@ -47,7 +47,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <div className="space-y-12 py-24">
+    <div id="features" className="space-y-12 py-24">
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 rounded-full border border-[#69E300]/20 bg-[#69E300]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#69E300]">
           <Sparkles className="h-4 w-4" />

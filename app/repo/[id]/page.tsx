@@ -2,6 +2,7 @@ import { Navigation } from "@/components/navigation"
 import { RepoHeader } from "@/components/repo-header"
 import { RepoHealthOverview } from "@/components/repo-health-overview"
 import { PRAuditTimeline } from "@/components/pr-audit-timeline"
+import { PRList } from "@/components/pr-list"
 import { SecurityTrends } from "@/components/security-trends"
 import { AgentActivitySummary } from "@/components/agent-activity-summary"
 import { RepoContributors } from "@/components/repo-contributors"
@@ -143,9 +144,13 @@ export default async function RepoDetailsPage({ params }: { params: { id: string
               <PRAuditTimeline audits={audits} />
             </section>
             <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+              <PRList owner={repository.owner} repo={repository.name} />
+            </section>
+            <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
               <SecurityTrends audits={audits} />
             </section>
           </div>
+
 
           {/* Activity & Observability */}
           <aside className="space-y-12 lg:col-span-4">
