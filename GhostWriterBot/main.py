@@ -31,13 +31,18 @@ GITHUB_APP_ID = os.getenv("GITHUB_APP_ID")
 WEBHOOK_SECRET = os.getenv("GITHUB_WEBHOOK_SECRET")
 
 # Load private key
-try:
-    with open("private-key.pem", "r") as f:
-        GITHUB_PRIVATE_KEY = f.read()
-except FileNotFoundError:
-    print("❌ ERROR: private-key.pem not found!")
-    print("Please ensure the GitHub App private key is in the same directory.")
-    raise
+GITHUB_PRIVATE_KEY = os.getenv("GITHUB_APP_PRIVATE_KEY") or os.getenv("GITHUB_PRIVATE_KEY")
+
+if not GITHUB_PRIVATE_KEY:
+    try:
+        with open("private-key.pem", "r") as f:
+            GITHUB_PRIVATE_KEY = f.read()
+    except FileNotFoundError:
+        print("❌ ERROR: GitHub Private Key not found in environment or private-key.pem!")
+        raise ValueError("Missing GitHub Private Key. Please set GITHUB_APP_PRIVATE_KEY in your env.")
+
+# Ensure newlines are correctly formatted (some dashboards escape them)
+GITHUB_PRIVATE_KEY = GITHUB_PRIVATE_KEY.replace('\\n', '\n')
 
 app = FastAPI(
     title="DevOps-GhostWriter",
