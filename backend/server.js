@@ -283,3 +283,5 @@ app.listen(PORT, () => {
   console.log(`- EMAIL_PASS: ${process.env.EMAIL_PASS ? 'SET' : 'NOT SET'}`);
   console.log(`- PYTHON_AGENT_URL: ${PYTHON_AGENT_URL}`);
 });
+
+module.exports = app;
