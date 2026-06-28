@@ -89,3 +89,4 @@ pr_comment.md
 # Temporary files
 *.tmp
 temp/
+prev env

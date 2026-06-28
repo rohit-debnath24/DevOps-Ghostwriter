@@ -1,9 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { exec } from "child_process"
-import path from "path"
-import { promisify } from "util"
-
-const execAsync = promisify(exec)
 
 export async function POST(request: NextRequest) {
     try {
@@ -16,65 +11,22 @@ export async function POST(request: NextRequest) {
             }, { status: 400 })
         }
 
-        // Validate URL format basic check
-        if (!prUrl.includes('github.com') || !prUrl.includes('/pull/')) {
+        // Parse URL 
+        const match = prUrl.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/);
+        if (!match) {
             return NextResponse.json({
-                error: 'Invalid GitHub PR URL provided'
+                error: 'Invalid GitHub PR URL provided. Expected format: https://github.com/owner/repo/pull/123'
             }, { status: 400 })
         }
+        
+        const owner = match[1];
+        const repo = match[2];
+        const prNumber = match[3];
 
-        console.log(`[API] Triggering python script for PR: ${prUrl}`)
+        console.log(`[API] Submitting PR for analysis: ${owner}/${repo} #${prNumber}`)
 
-        // Path to the python script
-        const scriptPath = path.resolve(process.cwd(), 'fetch_real_pr.py')
-
-        // Construct command with optional email
-        let command = `python "${scriptPath}" "${prUrl}"`
-        if (email) {
-            command += ` --email "${email}"`
-        }
-
-        console.log(`[API] Executing command: ${command}`)
-
-        try {
-            const { stdout, stderr } = await execAsync(command)
-
-            console.log('[Python Script Output]:', stdout)
-
-            // Warnings might appear in stderr, but execution might be successful
-            if (stderr) {
-                console.warn('[Python Script Stderr]:', stderr)
-            }
-
-            return NextResponse.json({
-                error: `Failed to fetch PR from GitHub (${ghRes.status})`
-            }, { status: ghRes.status })
-        }
-
-        const prData = await ghRes.json()
-
-        // 3. Construct Payload for Backend
-        const payload = {
-            action: "opened",
-            pull_request: {
-                number: prNumber,
-                title: prData.title || `PR #${prNumber}`,
-                body: prData.body || "No description provided",
-                html_url: prData.html_url || prUrl,
-                diff_url: prData.diff_url || ""
-            },
-            repository: {
-                name: repo,
-                owner: { login: owner },
-                full_name: `${owner}/${repo}`
-            },
-            email: email || null, // Use provided email or let backend rely on payload defaults
-            github_token: request.cookies.get('github_token')?.value || null
-        }
-
-        // 4. Forward to Node.js Backend
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
-        const targetUrl = `${backendUrl}/api/webhook/github`
+        const targetUrl = `${backendUrl}/api/analyze-pr`
 
         console.log(`[API] Forwarding to Backend: ${targetUrl}`)
 
@@ -82,22 +34,20 @@ export async function POST(request: NextRequest) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-GitHub-Event': 'pull_request'
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ owner, repo, pull_number: prNumber, email })
         })
 
         if (!backendRes.ok) {
             const txt = await backendRes.text()
             return NextResponse.json({
-                error: 'Failed to execute analysis script',
-                details: execError.message,
-                stderr: execError.stderr,
-                stdout: execError.stdout,
-                command: command,
-                path_env: process.env.PATH // Debug info
-            }, { status: 500 })
+                error: 'Failed to execute analysis script on backend',
+                details: txt,
+            }, { status: backendRes.status })
         }
+
+        const data = await backendRes.json();
+        return NextResponse.json(data);
 
     } catch (error: any) {
         console.error('Error submitting PR:', error)
